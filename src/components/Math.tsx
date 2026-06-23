@@ -115,9 +115,11 @@ type Block =
   | { kind: "ul"; items: string[] }
   | { kind: "ol"; items: string[] }
   | { kind: "code"; lines: string[] }
+  | { kind: "h"; level: number; text: string }
   | { kind: "table"; header: string[]; rows: string[][] };
 
 const isFence = (l: string) => /^```/.test(l.trim());
+const headingMatch = (l: string) => l.match(/^(#{2,4})\s+(.*)$/);
 
 const isBullet = (l: string) => /^-\s+/.test(l);
 const isOrdered = (l: string) => /^\d+\.\s+/.test(l);
@@ -141,6 +143,10 @@ function parseBlocks(text: string): Block[] {
       while (i < lines.length && !isFence(lines[i])) { code.push(lines[i]); i++; }
       if (i < lines.length) i++; // consume closing fence
       blocks.push({ kind: "code", lines: code });
+    } else if (headingMatch(line)) {
+      const m = headingMatch(line)!;
+      blocks.push({ kind: "h", level: m[1].length, text: m[2] });
+      i++;
     } else if (isTableRow(line) && i + 1 < lines.length && isTableSep(lines[i + 1])) {
       const header = splitCells(line);
       i += 2;
@@ -192,6 +198,10 @@ function renderBlock(b: Block, key: number): ReactNode {
       return (
         <pre className="md-code" key={key}><code>{b.lines.join("\n")}</code></pre>
       );
+    case "h": {
+      const Tag = (b.level <= 2 ? "h4" : b.level === 3 ? "h5" : "h6") as keyof JSX.IntrinsicElements;
+      return <Tag className="md-h" key={key}><RichLine text={b.text} /></Tag>;
+    }
     case "p":
       // <div> not <p>: a paragraph may contain block math ($$) which renders a
       // <div>, illegal inside <p>.

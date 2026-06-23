@@ -540,6 +540,8 @@ kbd {
   font-size: 12.5px; line-height: 1.5; white-space: pre;
 }
 .md-code code { font-family: inherit; color: inherit; background: none; padding: 0; }
+.md-h { margin: 20px 0 6px; line-height: 1.3; font-weight: 650; }
+h4.md-h { font-size: 16px; } h5.md-h { font-size: 14.5px; color: var(--ink); } h6.md-h { font-size: 13px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
 
 /* ------------------------- Open Debates --------------------------- */
 .debates-view { max-width: 900px; margin: 0 auto; padding: 28px 28px 64px; }
