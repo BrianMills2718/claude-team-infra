@@ -544,6 +544,19 @@ kbd {
 h4.md-h { font-size: 16px; } h5.md-h { font-size: 14.5px; color: var(--ink); } h6.md-h { font-size: 13px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
 .md-quote { margin: 12px 0; padding: 8px 16px; border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 6%, transparent); color: var(--ink); font-style: italic; }
 
+/* Compendium */
+.compendium { max-width: 920px; margin: 0 auto; padding: 28px 28px 64px; }
+.cm-head h1 { margin: 0 0 8px; font-size: 24px; }
+.cm-intro { color: var(--ink-soft); font-size: 15px; line-height: 1.55; margin: 0 0 16px; }
+.cm-toc { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; margin: 0 0 24px; }
+.cm-toc-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+.cm-toc ul { margin: 8px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; }
+.cm-toc a { color: var(--accent); text-decoration: none; font-size: 14px; }
+.cm-section { border-top: 1px solid var(--line); }
+.cm-toggle { width: 100%; text-align: left; background: none; border: none; padding: 14px 2px; font-size: 17px; font-weight: 650; color: var(--ink); cursor: pointer; display: flex; gap: 10px; align-items: baseline; }
+.cm-chevron { color: var(--accent); font-size: 13px; }
+.cm-content { padding: 0 2px 20px; }
+
 /* ------------------------- Open Debates --------------------------- */
 .debates-view { max-width: 900px; margin: 0 auto; padding: 28px 28px 64px; }
 .dv-head h1 { margin: 0 0 8px; font-size: 24px; }

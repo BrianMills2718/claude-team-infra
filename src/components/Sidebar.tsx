@@ -7,7 +7,7 @@ import { LESSONS } from "../content/lessons";
 import { nodeForLesson, nodeById } from "../content/graph";
 import { useSkillView, nodeStateOf } from "../store/skillProgress";
 
-type Route = { kind: "tree" } | { kind: "node"; id: string } | { kind: "concepts" } | { kind: "debates" };
+type Route = { kind: "tree" } | { kind: "node"; id: string } | { kind: "concepts" } | { kind: "debates" } | { kind: "compendium" };
 
 export function Sidebar({ route, onOpenGlossary }: { route: Route; onOpenGlossary: () => void }) {
   const { passed, goalId, recommended } = useSkillView();
@@ -29,6 +29,9 @@ export function Sidebar({ route, onOpenGlossary }: { route: Route; onOpenGlossar
       </a>
       <a href="#/debates" className={`tree-link ${route.kind === "debates" ? "active" : ""}`}>
         ⚖ Open Debates
+      </a>
+      <a href="#/compendium" className={`tree-link ${route.kind === "compendium" ? "active" : ""}`}>
+        ▤ Compendium
       </a>
 
       <div className="sidebar-goal">

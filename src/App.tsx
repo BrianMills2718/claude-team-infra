@@ -10,17 +10,19 @@ import { SkillTree } from "./components/SkillTree";
 import { NodeDetail } from "./components/NodeDetail";
 import { ConceptGraphView } from "./components/ConceptGraphView";
 import { DebatesView } from "./components/DebatesView";
+import { CompendiumView } from "./components/CompendiumView";
 import { Sidebar } from "./components/Sidebar";
 import { GlossaryDrawer } from "./components/GlossaryDrawer";
 import { nodeForLesson } from "./content/graph";
 
-type Route = { kind: "tree" } | { kind: "node"; id: string } | { kind: "concepts" } | { kind: "debates" };
+type Route = { kind: "tree" } | { kind: "node"; id: string } | { kind: "concepts" } | { kind: "debates" } | { kind: "compendium" };
 
 function parse(hash: string): Route {
-  const h = hash.replace(/^#\/?/, "");
+  const h = hash.replace(/^#\/?/, "").split("#")[0];
   if (h === "" || h === "tree") return { kind: "tree" };
   if (h === "concepts") return { kind: "concepts" };
   if (h === "debates") return { kind: "debates" };
+  if (h === "compendium") return { kind: "compendium" };
   if (h.startsWith("node/")) return { kind: "node", id: h.slice(5) };
   if (h.startsWith("stage-")) {
     const n = nodeForLesson(h);
@@ -68,6 +70,8 @@ export function App() {
           <ConceptGraphView />
         ) : route.kind === "debates" ? (
           <DebatesView />
+        ) : route.kind === "compendium" ? (
+          <CompendiumView />
         ) : (
           <NodeDetail nodeId={route.id} />
         )}
