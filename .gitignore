@@ -1,3 +1,13 @@
-node_modules
-dist
+node_modules/
+dist/
+*.local
+.DS_Store
+scripts/shots/
+
+# backend
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+
+# TypeScript incremental build cache
 *.tsbuildinfo

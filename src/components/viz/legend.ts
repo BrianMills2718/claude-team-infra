@@ -1,0 +1,72 @@
+/**
+ * Single source of truth for what each layer and edge type *means* and how it
+ * is styled. Every typed graph renders a legend from this so the learner can
+ * always decode "this dashed orange arrow = encodes_as (coding layer)".
+ *
+ * Accessibility: each layer carries BOTH a color and a distinct line style /
+ * shape hint, so the distinctions never rely on color alone.
+ */
+import type { EdgeType, Layer } from "../../types";
+
+export const LAYER_META: Record<
+  Layer,
+  { label: string; color: string; blurb: string }
+> = {
+  orientation: {
+    label: "Orientation",
+    color: "#64748b",
+    blurb: "One tool, many front-ends — the lay of the land.",
+  },
+  surfaces: {
+    label: "Surfaces",
+    color: "#2563eb",
+    blurb: "Where you work: CLI, Desktop, Cowork, Codex.",
+  },
+  config: {
+    label: "Config",
+    color: "#7c3aed",
+    blurb: "The shared setup that lives in the repo.",
+  },
+  capabilities: {
+    label: "Capabilities",
+    color: "#059669",
+    blurb: "Skills, sub-agents, hooks, MCP.",
+  },
+  distribution: {
+    label: "Distribution",
+    color: "#d97706",
+    blurb: "Bundling and sharing the library.",
+  },
+  governance: {
+    label: "Governance",
+    color: "#dc2626",
+    blurb: "Enforced policy, precedence, and seats.",
+  },
+  decision: {
+    label: "Decision",
+    color: "#0891b2",
+    blurb: "Placing each shared thing in the right tier.",
+  },
+};
+
+/** Edge dash patterns give a non-color cue per relation family; `verbose` is the
+ *  fuller gloss shown on hover (the short `label` is always drawn on the edge). */
+export const EDGE_META: Record<EdgeType, { label: string; dash?: string; verbose: string }> = {
+  formed_from: { label: "formed from", verbose: "the target is built from the source by a formation rule" },
+  parsed_as: { label: "parsed as", verbose: "the source string is recognized by the grammar as the target category" },
+  has_subexpression: { label: "has subexpression", verbose: "the source contains the target as a syntactic part" },
+  binds_variable: { label: "binds variable", dash: "2 3", verbose: "the source quantifier binds the target variable occurrence" },
+  premise_of: { label: "premise of", verbose: "the source is a premise of the target inference step" },
+  concludes: { label: "concludes", verbose: "the target is the conclusion drawn by the source step" },
+  derived_by: { label: "derived by", dash: "2 3", verbose: "the target is obtained from the source by an inference rule" },
+  proves: { label: "proves", verbose: "syntactic derivability (⊢): the source theory proves the target sentence" },
+  interpreted_as: { label: "interpreted as", dash: "6 4", verbose: "the symbol is given a meaning in the structure" },
+  evaluates_to: { label: "evaluates to", dash: "6 4", verbose: "the term evaluates to this object under the interpretation" },
+  satisfies: { label: "satisfies", dash: "6 4", verbose: "semantic truth (⊨): the structure makes the sentence true" },
+  encodes_as: { label: "encodes as", dash: "1 4", verbose: "the syntactic object is coded by this Gödel number" },
+  decodes_to: { label: "decodes to", dash: "1 4", verbose: "the number decodes back to this syntactic object" },
+  represents: { label: "represents", dash: "1 4", verbose: "the arithmetic predicate represents this syntactic relation" },
+  proves_about: { label: "proves about", dash: "8 3 2 3", verbose: "a metatheoretic claim proved about the object theory" },
+  extends: { label: "extends", dash: "8 3 2 3", verbose: "the target theory extends the source theory" },
+  relates: { label: "relates", verbose: "a generic relation shown on the layer-overview map" },
+};

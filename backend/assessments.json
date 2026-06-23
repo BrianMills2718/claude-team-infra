@@ -1,0 +1,524 @@
+{
+  "cap-prove-224": {
+    "id": "cap-prove-224",
+    "nodeId": "a-prove-224",
+    "title": "Prove 2+2=4",
+    "kind": "hybrid",
+    "taskPrompt": "Complete the derivation and justify the rule used at each step.",
+    "openEndedPrompt": "Explain which recursive addition equations justify each rewrite, and why this is a genuine PA derivation rather than 'obvious'.",
+    "rubric": {
+      "id": "rub-generic",
+      "criteria": [
+        {
+          "id": "correct",
+          "description": "Conceptually correct and applied to the concrete example, not memorized vocabulary.",
+          "maxScore": 70
+        },
+        {
+          "id": "precise",
+          "description": "Precise about the relevant distinction; no fatal misconception.",
+          "maxScore": 30
+        }
+      ]
+    },
+    "requiredConcepts": [
+      "numeral",
+      "recursive definition"
+    ],
+    "fatalMisconceptions": [
+      {
+        "id": "obvious",
+        "description": "Treats 2+2=4 as obvious without using the recursive addition rules.",
+        "remediationNodeIds": [
+          "c-pa"
+        ]
+      }
+    ],
+    "passThreshold": 0.8
+  },
+  "cap-proof-graph": {
+    "id": "cap-proof-graph",
+    "nodeId": "a-proof-graph",
+    "title": "Read a proof graph",
+    "kind": "hybrid",
+    "taskPrompt": "Given axioms $A$, $A\\to B$, $B\\to C$ and two modus-ponens steps deriving $C$:",
+    "openEndedPrompt": "Identify the premises and conclusions, and explain why $C$ is reachable — and why reachability is about derivation, not truth.",
+    "rubric": {
+      "id": "rub-generic",
+      "criteria": [
+        {
+          "id": "correct",
+          "description": "Conceptually correct and applied to the concrete example, not memorized vocabulary.",
+          "maxScore": 70
+        },
+        {
+          "id": "precise",
+          "description": "Precise about the relevant distinction; no fatal misconception.",
+          "maxScore": 30
+        }
+      ]
+    },
+    "requiredConcepts": [
+      "provability",
+      "proof graph"
+    ],
+    "fatalMisconceptions": [
+      {
+        "id": "true-prov",
+        "description": "Treats 'true in ℕ' as 'provable in PA'.",
+        "remediationNodeIds": [
+          "c-satisfaction",
+          "c-prov-vs-truth"
+        ]
+      }
+    ],
+    "passThreshold": 0.8
+  },
+  "cap-evaluate-N": {
+    "id": "cap-evaluate-N",
+    "nodeId": "a-evaluate-N",
+    "title": "Evaluate truth in ℕ",
+    "kind": "llm-judged",
+    "taskPrompt": "Explain why $\\mathbb{N}\\models 2+2=4$ but $\\mathbb{N}\\not\\models 2+2=5$.",
+    "openEndedPrompt": "Your answer must use: interpretation, the standard model ℕ, evaluation of +, and the equality check. Do not mention proof rules.",
+    "rubric": {
+      "id": "rub-evaluate-N",
+      "criteria": [
+        {
+          "id": "interp",
+          "description": "Uses interpretation of + and = in ℕ, not proof rules.",
+          "maxScore": 50
+        },
+        {
+          "id": "eval",
+          "description": "Evaluates both terms and compares, for 2+2=4 and 2+2=5.",
+          "maxScore": 50
+        }
+      ]
+    },
+    "requiredConcepts": [
+      "interpretation",
+      "satisfaction",
+      "truth in a structure"
+    ],
+    "fatalMisconceptions": [
+      {
+        "id": "true-prov",
+        "description": "Treats 'true in ℕ' as 'provable in PA'.",
+        "remediationNodeIds": [
+          "c-satisfaction",
+          "c-prov-vs-truth"
+        ]
+      }
+    ],
+    "passThreshold": 0.8
+  },
+  "cap-distinguish": {
+    "id": "cap-distinguish",
+    "nodeId": "a-distinguish",
+    "title": "Distinguish syntax, proof & truth",
+    "kind": "hybrid",
+    "taskPrompt": "For each item say whether it is well-formed, provable in PA (assuming PA consistent), and true in ℕ — then explain the difference between $T\\vdash P$ and $\\mathbb{N}\\models P$.",
+    "openEndedPrompt": "Explain why 'well-formed', 'provable in PA', and 'true in ℕ' are three different predicates, using the four canonical examples.",
+    "rubric": {
+      "id": "rub-distinguish",
+      "criteria": [
+        {
+          "id": "wf",
+          "description": "Correctly identifies well-formedness as grammatical, independent of truth.",
+          "maxScore": 25
+        },
+        {
+          "id": "prov-vs-true",
+          "description": "Explains ⊢ (derivability) and ⊨ (truth in ℕ) as different relations.",
+          "maxScore": 35
+        },
+        {
+          "id": "examples",
+          "description": "Applies the distinction correctly to all four canonical examples.",
+          "maxScore": 30
+        },
+        {
+          "id": "precision",
+          "description": "States hedges (e.g. 'assuming PA consistent/sound') where needed.",
+          "maxScore": 10
+        }
+      ]
+    },
+    "requiredConcepts": [
+      "syntactic",
+      "semantic",
+      "provability",
+      "truth in a structure"
+    ],
+    "fatalMisconceptions": [
+      {
+        "id": "wf-true",
+        "description": "Treats 'well-formed' as 'true'.",
+        "remediationNodeIds": [
+          "c-grammar",
+          "c-prov-vs-truth"
+        ]
+      },
+      {
+        "id": "true-prov",
+        "description": "Treats 'true in ℕ' as 'provable in PA'.",
+        "remediationNodeIds": [
+          "c-satisfaction",
+          "c-prov-vs-truth"
+        ]
+      },
+      {
+        "id": "malformed-false",
+        "description": "Treats a malformed string as false (it has no truth value).",
+        "remediationNodeIds": [
+          "c-syntax",
+          "c-grammar"
+        ]
+      }
+    ],
+    "passThreshold": 0.8
+  },
+  "cap-sound-complete": {
+    "id": "cap-sound-complete",
+    "nodeId": "a-sound-complete",
+    "title": "Soundness vs completeness",
+    "kind": "llm-judged",
+    "taskPrompt": "Explain the difference between a theory being sound and being complete, and why a theory can be sound yet incomplete.",
+    "openEndedPrompt": "Define each precisely ($T\\vdash P\\Rightarrow\\mathbb{N}\\models P$ vs 'for every $P$, $T\\vdash P$ or $T\\vdash\\neg P$') and give the PA example.",
+    "rubric": {
+      "id": "rub-generic",
+      "criteria": [
+        {
+          "id": "correct",
+          "description": "Conceptually correct and applied to the concrete example, not memorized vocabulary.",
+          "maxScore": 70
+        },
+        {
+          "id": "precise",
+          "description": "Precise about the relevant distinction; no fatal misconception.",
+          "maxScore": 30
+        }
+      ]
+    },
+    "requiredConcepts": [
+      "soundness",
+      "completeness",
+      "consistency"
+    ],
+    "fatalMisconceptions": [
+      {
+        "id": "sound-complete-same",
+        "description": "Conflates soundness with completeness.",
+        "remediationNodeIds": [
+          "c-theory-props"
+        ]
+      }
+    ],
+    "passThreshold": 0.8
+  },
+  "cap-object-meta": {
+    "id": "cap-object-meta",
+    "nodeId": "a-object-meta",
+    "title": "Object vs metatheory",
+    "kind": "hybrid",
+    "taskPrompt": "Classify each claim by level, then explain why the metatheory can talk about PA's proofs.",
+    "openEndedPrompt": "Explain why 'PA is consistent' is a claim about PA, and why adding Con(T) yields a stronger theory.",
+    "rubric": {
+      "id": "rub-generic",
+      "criteria": [
+        {
+          "id": "correct",
+          "description": "Conceptually correct and applied to the concrete example, not memorized vocabulary.",
+          "maxScore": 70
+        },
+        {
+          "id": "precise",
+          "description": "Precise about the relevant distinction; no fatal misconception.",
+          "maxScore": 30
+        }
+      ]
+    },
+    "requiredConcepts": [
+      "object theory",
+      "metatheory"
+    ],
+    "fatalMisconceptions": [
+      {
+        "id": "obj-meta",
+        "description": "Treats metatheoretic claims as statements inside T.",
+        "remediationNodeIds": [
+          "c-metatheory"
+        ]
+      }
+    ],
+    "passThreshold": 0.8
+  },
+  "cap-computability": {
+    "id": "cap-computability",
+    "nodeId": "a-computability",
+    "title": "Why computable systems",
+    "kind": "llm-judged",
+    "taskPrompt": "Explain why all PA theorems can be listed (r.e.) but PA theoremhood is not decidable.",
+    "openEndedPrompt": "Distinguish proof-checking (decidable) from theoremhood (r.e., undecidable), and note why 'undecidable' is not about being slow.",
+    "rubric": {
+      "id": "rub-generic",
+      "criteria": [
+        {
+          "id": "correct",
+          "description": "Conceptually correct and applied to the concrete example, not memorized vocabulary.",
+          "maxScore": 70
+        },
+        {
+          "id": "precise",
+          "description": "Precise about the relevant distinction; no fatal misconception.",
+          "maxScore": 30
+        }
+      ]
+    },
+    "requiredConcepts": [
+      "decidable",
+      "recursively enumerable",
+      "undecidable"
+    ],
+    "fatalMisconceptions": [
+      {
+        "id": "undecidable-slow",
+        "description": "Says 'undecidable' means 'too computationally expensive'.",
+        "remediationNodeIds": [
+          "c-computability"
+        ]
+      }
+    ],
+    "passThreshold": 0.8
+  },
+  "cap-encode": {
+    "id": "cap-encode",
+    "nodeId": "a-encode",
+    "title": "Encode syntax as arithmetic",
+    "kind": "hybrid",
+    "taskPrompt": "Encode the sequence $[4,7,9]$ with prime powers and explain how it is recovered.",
+    "openEndedPrompt": "Explain how a proof becomes a number, and why the number itself does not intrinsically 'know' what it encodes.",
+    "rubric": {
+      "id": "rub-generic",
+      "criteria": [
+        {
+          "id": "correct",
+          "description": "Conceptually correct and applied to the concrete example, not memorized vocabulary.",
+          "maxScore": 70
+        },
+        {
+          "id": "precise",
+          "description": "Precise about the relevant distinction; no fatal misconception.",
+          "maxScore": 30
+        }
+      ]
+    },
+    "requiredConcepts": [
+      "Gödel coding",
+      "arithmetization of syntax"
+    ],
+    "fatalMisconceptions": [
+      {
+        "id": "code-understands",
+        "description": "Says the code number intrinsically 'understands' the proof.",
+        "remediationNodeIds": [
+          "c-coding",
+          "c-prov-predicate"
+        ]
+      }
+    ],
+    "passThreshold": 0.8
+  },
+  "cap-prov-predicate": {
+    "id": "cap-prov-predicate",
+    "nodeId": "a-prov-predicate",
+    "title": "Proof-checking as arithmetic",
+    "kind": "llm-judged",
+    "taskPrompt": "Explain what $\\mathrm{Proof}_T(p,q)$ checks and why it is an arithmetic formula, not an English concept.",
+    "openEndedPrompt": "Cover: the four checks $\\mathrm{Proof}_T$ performs, why proof-checking is primitive recursive hence representable, and $\\mathrm{Prov}_T(q):=\\exists p\\,\\mathrm{Proof}_T(p,q)$.",
+    "rubric": {
+      "id": "rub-generic",
+      "criteria": [
+        {
+          "id": "correct",
+          "description": "Conceptually correct and applied to the concrete example, not memorized vocabulary.",
+          "maxScore": 70
+        },
+        {
+          "id": "precise",
+          "description": "Precise about the relevant distinction; no fatal misconception.",
+          "maxScore": 30
+        }
+      ]
+    },
+    "requiredConcepts": [
+      "Proof_T(p,q)",
+      "Prov_T(q)",
+      "representable"
+    ],
+    "fatalMisconceptions": [
+      {
+        "id": "code-understands",
+        "description": "Says the code number intrinsically 'understands' the proof.",
+        "remediationNodeIds": [
+          "c-coding",
+          "c-prov-predicate"
+        ]
+      }
+    ],
+    "passThreshold": 0.8
+  },
+  "cap-godel-sentence": {
+    "id": "cap-godel-sentence",
+    "nodeId": "a-godel-sentence",
+    "title": "Construct the Gödel sentence",
+    "kind": "llm-judged",
+    "taskPrompt": "Explain $G_T \\leftrightarrow \\neg\\mathrm{Prov}_T(\\ulcorner G_T\\urcorner)$.",
+    "openEndedPrompt": "Define $G_T$, $\\mathrm{Prov}_T(q)$, and $\\ulcorner G_T\\urcorner$; explain why $G_T$ is still arithmetic and why this is self-reference through coding (Fixed-Point Lemma), not the liar paradox.",
+    "rubric": {
+      "id": "rub-godel-sentence",
+      "criteria": [
+        {
+          "id": "defs",
+          "description": "Defines G_T, Prov_T, and ⌜G_T⌝ correctly.",
+          "maxScore": 30
+        },
+        {
+          "id": "arithmetic",
+          "description": "Explains why G_T is an arithmetic sentence about numbers.",
+          "maxScore": 25
+        },
+        {
+          "id": "fixed-point",
+          "description": "Attributes the self-reference to the Fixed-Point Lemma / coding.",
+          "maxScore": 25
+        },
+        {
+          "id": "not-liar",
+          "description": "Explains why it is not the liar paradox (provability is representable; truth is not).",
+          "maxScore": 20
+        }
+      ]
+    },
+    "requiredConcepts": [
+      "Gödel sentence",
+      "diagonalization",
+      "Fixed-Point Lemma"
+    ],
+    "fatalMisconceptions": [
+      {
+        "id": "liar",
+        "description": "Says the Gödel sentence is merely the English liar paradox.",
+        "remediationNodeIds": [
+          "c-diagonalization",
+          "c-prov-predicate"
+        ]
+      }
+    ],
+    "passThreshold": 0.8
+  },
+  "cap-first": {
+    "id": "cap-first",
+    "nodeId": "a-first",
+    "title": "Explain First Incompleteness",
+    "kind": "llm-judged",
+    "taskPrompt": "Explain Gödel's First Incompleteness Theorem.",
+    "openEndedPrompt": "Cover: (1) the conditions on T; (2) what $G_T$ says; (3) why $T\\nvdash G_T$ if T is consistent; (4) why $G_T$ is true in ℕ (soundness); (5) why this is not absolute unprovability.",
+    "rubric": {
+      "id": "rub-first",
+      "criteria": [
+        {
+          "id": "conditions",
+          "description": "States the three conditions on T.",
+          "maxScore": 25
+        },
+        {
+          "id": "unprov",
+          "description": "Explains T⊬G_T from consistency.",
+          "maxScore": 25
+        },
+        {
+          "id": "truth",
+          "description": "Explains why G_T is true in ℕ (soundness/standard model).",
+          "maxScore": 25
+        },
+        {
+          "id": "scope",
+          "description": "Notes unprovable-in-T is not absolutely unprovable.",
+          "maxScore": 25
+        }
+      ]
+    },
+    "requiredConcepts": [
+      "consistent",
+      "computably axiomatized",
+      "first incompleteness theorem"
+    ],
+    "fatalMisconceptions": [
+      {
+        "id": "absolute",
+        "description": "Says G_T is absolutely unprovable in every system.",
+        "remediationNodeIds": [
+          "c-incompleteness-1"
+        ]
+      },
+      {
+        "id": "true-prov",
+        "description": "Treats 'true in ℕ' as 'provable in PA'.",
+        "remediationNodeIds": [
+          "c-satisfaction",
+          "c-prov-vs-truth"
+        ]
+      }
+    ],
+    "passThreshold": 0.8
+  },
+  "cap-second": {
+    "id": "cap-second",
+    "nodeId": "a-second",
+    "title": "Explain Second Incompleteness",
+    "kind": "llm-judged",
+    "taskPrompt": "Explain why a suitable consistent T cannot prove $\\mathrm{Con}(T)$, and why adding it never ends the hierarchy (for a sound base, where each extension stays consistent).",
+    "openEndedPrompt": "Cover: $\\mathrm{Con}(T):=\\neg\\mathrm{Prov}_T(\\ulcorner 0=1\\urcorner)$; the formalized first theorem; that a stronger theory can prove it; and why $T+\\mathrm{Con}(T)$ has its own Gödel sentence.",
+    "rubric": {
+      "id": "rub-second",
+      "criteria": [
+        {
+          "id": "con-def",
+          "description": "Defines Con(T) as the arithmetic sentence ¬Prov_T(⌜0=1⌝).",
+          "maxScore": 25
+        },
+        {
+          "id": "formalized-first",
+          "description": "States the Second theorem as the First theorem formalized inside T: a consistent, computably axiomatized, strong T cannot prove Con(T).",
+          "maxScore": 25
+        },
+        {
+          "id": "not-absolute",
+          "description": "Notes Con(T) is true (for a sound base) yet unprovable in T, and a stronger theory can prove it — so it is not absolutely unprovable.",
+          "maxScore": 25
+        },
+        {
+          "id": "hierarchy",
+          "description": "Explains that T+Con(T) has its own Gödel sentence, so adding consistency never closes the hierarchy.",
+          "maxScore": 25
+        }
+      ]
+    },
+    "requiredConcepts": [
+      "Con(T)",
+      "second incompleteness theorem"
+    ],
+    "fatalMisconceptions": [
+      {
+        "id": "con-false",
+        "description": "Says T can't prove Con(T) because Con(T) is false.",
+        "remediationNodeIds": [
+          "c-incompleteness-2"
+        ]
+      }
+    ],
+    "passThreshold": 0.8
+  }
+}
