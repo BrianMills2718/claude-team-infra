@@ -1,99 +1,48 @@
-# The Concept Ladder — Gödel Prerequisites
+# Team AI Infra — Shared Claude Code + Codex Setup
 
-**Live:** https://brianmills2718.github.io/godel-concept-ladder/ (auto-deploys from
-`master` via GitHub Actions → Pages). The deployed site is fully usable — lessons,
-the skill tree, deterministic quizzes, progress. The *open-ended* achievement
+**Live:** https://brianmills2718.github.io/claude-team-infra/ (deploys from the
+`gh-pages` branch). The deployed site is fully usable — lessons, the skill tree,
+the concept graph, deterministic quizzes, progress. The *open-ended* capstone
 grading needs the LLM-judge backend (`backend/`), which Pages can't host, so on the
-hosted site it degrades to self-assess; run the backend locally for AI grading.
+hosted site it degrades to self-assess.
 
-An educational site that teaches the prerequisites for Gödel's incompleteness
-theorems by keeping the key relations **strictly apart**. The pedagogical goal is
-not "explain Gödel" — it is to prevent the category errors (well-formed =
-provable = true) that ordinary explanations skip over.
+A concept-graph course that takes you from "which Claude thing do I even open?"
+to a **justified decision** about how to set up your team's shared AI
+infrastructure across **Claude Code and Codex** — config, capabilities,
+distribution, governance, and where each shared thing lives.
 
-**Architecture — concept graph as source of truth.** A **concept graph**
-(`src/content/concepts.ts`: 60 concepts, acyclic prerequisites each with a stated
-justification, plus undirected `contrasts`) is the single source of truth; the
-**skill map** (homepage DAG) is *derived* from it (`derive.ts` → `graph.ts`). The
-homepage is that derived prerequisite DAG — concept nodes (the reviewed lessons) +
-13 **achievement** nodes earned by **performance assessment**, not by viewing
-content. Deterministic checks grade exact answers; an **LLM judge** (`backend/`,
-FastAPI + llm_client) grades open-ended explanations with fatal-misconception
-overrides and remediation routing. `#/concepts` renders the concept graph itself
-(stage layout, per-edge justifications). Pick a goal and the tree highlights its
-prerequisite sub-DAG. The old linear ladder is one topological order of the derived
-map. See `docs/ADR-0002…0004` and `METHODOLOGY.md`; ADR-0001/MIGRATION_PLAN are
-historical. **To change structure, edit `concepts.ts`, not `graph.ts`.**
+Seven stages: **orientation → surfaces → config → capabilities → distribution →
+governance → decision**, ending in one capstone — lay out and justify your team's
+shared setup.
 
-## Stack
-- Vite + React + TypeScript
-- KaTeX for math, React Flow for typed node-link graphs (DAGs only)
-- Content is plain data (`src/content/`); progress in localStorage; optional
-  FastAPI + `llm_client` judge backend (`backend/`) for open-ended grading
+## Architecture — concept graph as source of truth
+
+This site is a clean instance of the godel concept-graph engine. A **concept
+graph** (`src/content/concepts.ts`: 24 concepts, acyclic prerequisites each with a
+stated justification + semantic kind, plus undirected `contrasts`) is the single
+source of truth; the **skill map** (homepage DAG) is *derived* from it
+(`derive.ts` → `graph.ts`). To change the curriculum, edit `concepts.ts`, not the
+derived map.
+
+Everything is gated by `npm run check` (tsc + `scripts/validate-content.mjs` +
+build): the prerequisite graph must be acyclic, every edge justified, definitions
+closed, groups coherent, every lesson at the craft floor (hook → analogy-first →
+Therefore/But spine, ≥3 quiz, ≥1 visualization, ≥2 confusions, a mastery check).
+
+## It was also a stress test
+
+This curriculum was built to **stress-test** whether the concept-graph methodology
+(proven on conceptual domains like Gödel) survives a **decision / best-practices**
+domain. The verdict and the findings are in [`STRESS_TEST.md`](./STRESS_TEST.md):
+the content model travels; the repo-as-reusable-engine does not yet (the engine
+still hard-codes the stage count, framing copy, and drags the first domain's
+fixtures). The methodology held; the packaging needs a content/skeleton split.
 
 ## Develop
+
 ```bash
 npm install
-npm run dev        # http://localhost:5173
-npm run build      # static bundle in dist/ (relative paths, deploys anywhere)
-npm run validate   # structural check of all lesson/quiz/graph content
-npm run check      # typecheck + validate + build (full gate)
+npm run dev          # http://localhost:5173
+npm run check        # tsc + content validator + build (the gate)
+npm run screenshots  # headless visual pass (run a preview/dev server first)
 ```
-
-## Code map
-- `src/types.ts` — the content contract (Concept, Lesson, typed graph/quiz unions)
-- `src/content/concepts.ts` — **the source of truth**: 60 concepts + `PREREQ_WHY`
-  (per-edge justifications) + topological-order/SCC helpers
-- `src/content/derive.ts` — SCC linter, `deriveStageEdges`, `transitiveReduction`
-- `src/content/graph.ts` — skill map: derived prerequisite edges + hand-authored
-  overlay (achievements, positions, goals)
-- `src/content/lessons/` — one file per stage; add to `lessons/index.ts`
-- `src/content/glossary.ts` — 61 terms, every technical word used in a lesson
-- `src/components/ConceptGraphView.tsx` — the `#/concepts` concept-graph view
-- `src/components/viz/` — six renderers: typed-graph (React Flow), parse-tree,
-  **parse-explorer** (formation rules + parse/fail), comparison-table,
-  coding-encoder (prime-power BigInt), godel-loop
-- `src/components/Quiz.tsx` — MC / multi-select / true-false / classification /
-  fill-in / matching, with immediate feedback + why-wrong explanations
-- `src/store/progress.ts` — localStorage, soft gating (never blocks navigation)
-- `scripts/validate-content.mjs` — the build gate: stage coverage, quiz integrity,
-  **concept acyclicity + definition closure + mandatory PREREQ_WHY + group
-  coherence + contrasts symmetry**, graph edges, a11y summaries
-- `scripts/derive-report.mjs` — SCC/cycle linter + derived-vs-authored map audit
-
-## Status — complete
-All **17 stages (0–16)** are authored, registered, and validated:
-
-| | | |
-|---|---|---|
-| 0 Four-Level Map | 1 Symbols→Sentences | 2 Grammar |
-| 3 Proofs | 4 Proof graphs | 5 PA & 2+2=4 |
-| 6 Structures | 7 Satisfaction (⊨) | 8 ⊢ vs ⊨ |
-| 9 Sound/Complete | 10 Object vs Meta | 11 Computability |
-| 12 Gödel coding | 13 Proof_T/Prov_T | 14 Diagonalization |
-| 15 First Incompleteness | 16 Second Incompleteness | |
-
-`CONTENT_NOTES.md` records the math-correctness decisions (consistency vs
-soundness vs ω-consistency/Rosser; Fixed-Point Lemma; the two senses of
-"complete"; representability) applied across Stages 9–16. `RUNNING_EXAMPLE.md`
-documents the fixed example cast and the inline-definition system.
-
-### Security note (dev dependency)
-`npm audit` flags an esbuild advisory (GHSA-67mh-4wv8-2f99) inherited via Vite.
-It affects **only the local dev server** (`npm run dev`) — a malicious website
-could read dev-server responses — and is **not present in the built static
-output** (`dist/`), which ships no esbuild/Vite. The only patched path is a major
-Vite upgrade (v8), a breaking change deferred for now. Mitigation: don't run the
-dev server on an untrusted network; the production bundle is unaffected.
-
-### Acceptance criteria (from the spec)
-- [x] Separates well-formedness / provability / truth / metatheory / coding via
-      typed nodes + typed edges with per-graph legends.
-- [x] Shows 2+2=5 well-formed-but-false; 2+2=4 provable & true; G_T arithmetic
-      not paradox; Proof_T an arithmetic predicate; metatheory ≠ a node in T.
-- [x] Every stage has a quiz with why-correct + why-wrong feedback.
-- [x] Typed, consistent graph notation + textual fallback (a11y).
-- [x] No unexplained term — all are in the glossary (validated).
-- [x] Sequential navigation + review (sidebar); soft mastery gating.
-- [x] Math renders (KaTeX); clean, content-driven (add a lesson without touching
-      components).
