@@ -1,81 +1,61 @@
-# godel — project instructions
+# claude-team-infra — project instructions
 
-Educational site teaching the prerequisites for Gödel's incompleteness theorems.
-Core mission: **prevent category errors** — make `well-formed ≠ provable ≠ true ≠
-metatheoretically known` visible. Not a generic "Gödel explainer."
+A concept-graph course that takes a lead from "which Claude thing do I open?" to a
+**justified decision** about setting up a team's shared AI coding infrastructure across
+**Claude Code and OpenAI Codex**. Built as a clean instance of the godel concept-graph
+engine — and as a **stress test** of that engine on a decision (vs conceptual) domain
+(`STRESS_TEST.md`). Two purposes: teach the material, harden the methodology.
 
-## Architecture (current state)
-The **concept graph is the source of truth** and everything else is derived
-(ADR-0002 → ADR-0003 → ADR-0004; generalized in `METHODOLOGY.md`):
-- **`src/content/concepts.ts`** — 60 concepts across the 17 stages. Each has a
-  definition, example, optional micro-quiz, a `group` (`introducedIn` stage), an
-  **acyclic** `prerequisites` list, optional `contrasts` (undirected), and a
-  **mandatory** per-edge justification in `PREREQ_WHY` (`"concept>prereq"` → why).
-- **`src/content/derive.ts`** — SCC linter + `deriveStageEdges` + `transitiveReduction`.
-- **`src/content/graph.ts`** — the skill map: its concept→concept prerequisite
-  edges are **derived** from the concept graph; only achievements, positions,
-  goals, and 4 audited pedagogical-sequencing edges are hand-authored overlay.
-- **Frontend** (static Vite/React/TS, KaTeX, React Flow): skill-tree homepage,
-  `#/concepts` concept-graph view (stage layout, per-edge justifications on
-  hover/inspect), per-stage concept panels with recursive `@c{}` drill-down chips,
-  the interactive parse/parse-failure explorer, 6 quiz types.
-- **Backend** (`backend/`, FastAPI + `llm_client`): the LLM judge is **live and
-  validated** (prompt_eval frozen set); achievements graded deterministic + judged.
-- To change curriculum structure, **edit `concepts.ts`, not `graph.ts`** — the
-  map, ordering, glossary panels, and checks follow. ADR-0001/MIGRATION_PLAN are
-  historical (the linear ladder = one topological order of the derived map).
+## Architecture — the concept graph is the source of truth
+Everything derives from `src/content/concepts.ts` (ADR-0002→0004; `METHODOLOGY.md`):
+- **`src/content/concepts.ts`** — 25 concepts across 7 stages (orientation · surfaces ·
+  config · capabilities · distribution · governance · decision). Each has a definition,
+  example, an **acyclic** `prerequisites` list, optional `contrasts`, an `introducedIn`
+  stage, and a **mandatory** per-edge `PREREQ_WHY` + `PREREQ_KIND`.
+- **`src/content/derive.ts`** — `deriveStageEdges` + `transitiveReduction` + goal closure.
+- **`src/content/graph.ts`** — the skill map: concept→concept edges are **derived** from
+  concepts.ts; only stage nodes, the `a-setup` achievement, and soft orientation links are
+  hand-authored overlay.
+- **`src/content/glossary.ts`** — **derived** from the concept graph (do not hand-author).
+- **`src/content/lessons/claude.ts`** — the 7 stage lessons, to the craft bar.
+- **`src/content/debates.ts`** — **derived** from `claims.jsonl` (contested entries) by
+  `scripts/derive-debates.mjs`; rendered by the `#/debates` view. Do not hand-edit.
+- To change curriculum structure, edit **`concepts.ts`**, never the derived output.
 
-## Content invariants (enforced)
-- **No forward references (prerequisite closure).** Every concept a node uses must
-  be introduced at that node or a transitive prerequisite — "has this already been
-  explained?" is a build gate, not a hope. Enforced by the closure checker in
-  `scripts/validate-content.mjs`: a `@t{term}` ref must resolve to a lesson that
-  defines it at-or-before the node. `@n{}` notation chips are self-contained
-  (carry their own definition). Unavoidable early refs (PA) use **spiral glosses**
-  — a one-line working definition up front, deepened later — not a bare name-drop.
-  Orientation nodes (stage-0) preview deliberately and are exempt.
-- **Concept graph invariants (ADR-0002/0003/0004), all gated in the validator.**
-  `prerequisites` is **acyclic** — a cycle is a *decomposition error*, not a
-  feature (resolve by: name a primitive; recognize an inductive definition as
-  well-founded; reclassify a contrast; or split into maturity versions). Every
-  prerequisite edge **must** have a `PREREQ_WHY` justification (no unjustified
-  edges, no orphans). Concept definitions are **closed** at term granularity
-  (a `@c{}`/`@t{}` ref must be a prerequisite-or-equal). The **group-lifted**
-  graph must be acyclic (no mis-grouping). `contrasts` must resolve and be
-  symmetric. Cyclicity is a diagnostic; the SCC pass is a linter.
-- **Two distinctions, not four levels.** The faithful frame is one precondition
-  (well-formed) + two orthogonal axes: `⊢ vs ⊨` (provable vs true) and object vs
-  metatheory. Proof is on the syntactic side; metatheory is a vantage, not a
-  level. The DAG roots are the atoms (syntax, structures); the "Two Distinctions"
-  node is an optional, non-gating map.
-- **Beware recency over-indexing.** This project was spurred by the end of a long
-  ChatGPT thread; generated specs over-fixate on whatever was salient late
-  (the old "four levels", the 9 edge types, the elaborate judge schema). Pressure-
-  test foundational framings against standard sources, not the chat's last turn.
+## The claim ledger (correctness, not just structure)
+The structural gates prove the graph is internally consistent; they do **not** prove it is
+factually correct. That is `claims.jsonl` + `scripts/validate-claims.mjs`: every load-bearing
+assertion carries a verdict + sources + `asOf` + the concepts it backs. The gate fails on any
+`open`/`wrong`/unsourced/stale claim, contested-with-<2-positions, or unresolved conceptId, and
+reports concept coverage. This is the fix for "green but wrong." See `docs/RESEARCH_LOOP.md` for
+the front-end methodology (Ground→Extract→Verify→Gap→loop-until-dry) and
+`scripts/research-loop.workflow.js` for the executable harness.
 
 ## Non-negotiables
-- **Math correctness is the product.** Apply `CONTENT_NOTES.md` (consistency vs
-  soundness vs ω-consistency/Rosser; Fixed-Point Lemma; two senses of "complete";
-  representability). A subtle content error is a critical bug here.
-- **Fixed running cast** (`RUNNING_EXAMPLE.md`): `T=PA`, `ℕ`, `2+2=4`,
-  `∀x(x+0=x)`, `2+2=5`, the malformed string, `G_T`/`Con(T)`. Use `G_PA` when the
-  theory is named PA (no `G_T`/`PA` drift).
-- **Every symbol defined at use** via `@n{key}` (notation.ts) / `@t{slug}`
-  (glossary). The validator fails on unresolved `@refs`.
-- **Verify by running it.** `npm run check` (tsc + content validator + build).
-  The headless visual pass (`npm run screenshots`, puppeteer, `--disable-dev-shm-usage`
-  for WSL) is mandatory before declaring UI done — it has already caught two
-  page-freezing bugs that tsc/validator/review all missed.
-- **Concept graph correctness.** `scripts/derive-report.mjs` is the SCC/cycle
-  linter + derived-vs-authored map audit + goal-closure check. The concept graph
-  passed a multi-agent Tier-1 correctness audit (2026-06-20); findings, fixes, and
-  the full edge inventory are in `docs/EDGE_REVIEW.md` — update it when edges change.
+- **Factual correctness is the product.** A wrong claim about plans/seats/features is a
+  critical bug. New facts go through the ledger (verify against authoritative docs), not
+  intuition. Perishable domain — keep `asOf` current (the gate enforces a refresh horizon).
+- **Verify by running it.** `npm run check` = tsc + content validator + claim gate +
+  debates drift-check + build. The headless visual pass (`npm run screenshots`, puppeteer,
+  `--disable-dev-shm-usage` for WSL) is mandatory before declaring UI done.
+- **Two engines.** The course spans Claude Code **and** Codex; portability (the config
+  mirror: AGENTS.md generated/symlinked from CLAUDE.md, skills mirrored into each tool's
+  dir, with a drift check) is load-bearing, not a footnote.
+- **Light-governance ≠ no governance.** The enforced floor must include marketplace trust
+  (pin allowed marketplaces; installing a plugin runs its code) and secret denial.
 
-## LLM judge (live — maintain to this contract)
-Built and validated; keep these invariants when changing it. Uses the ecosystem:
-`llm_client` (`task=`,`trace_id=`,`max_budget=`),
-`json_schema` structured output (`JudgeResult`; fatal-misconception fields
-required), prompts-as-data (YAML/Jinja, no f-strings), a typed `@boundary`,
-FastAPI + API parity, and **validate with `prompt_eval` on a frozen case set
-before it gates any achievement** (target false-pass ≤5%, false-fail ≤15%).
-API key backend-only; treat learner input as untrusted (prompt injection).
+## Content invariants (enforced by `scripts/validate-content.mjs`)
+- `prerequisites` acyclic; every edge has a `PREREQ_WHY` + valid `PREREQ_KIND`; definitions
+  closed; the group-lifted graph acyclic; `contrasts` symmetric; each lesson at the craft
+  floor (≥3 quiz, ≥1 visualization, ≥2 confusions, a mastery checkpoint, quiz integrity).
+
+## Backend (LLM judge)
+`backend/` grades the `cap-setup` capstone (lay out & justify the team setup) against
+`RUBRICS['rub-setup']` with fatal-misconception detection. Uses `llm_client`
+(`task=`/`trace_id=`/`max_budget=`), `json_schema` structured output, prompts-as-data,
+a typed `@boundary`, FastAPI + API parity; validate with `prompt_eval` on a frozen set
+(false-pass ≤5%, false-fail ≤15%). API key backend-only; treat learner input as untrusted.
+
+## Deploy
+GitHub Pages from the `gh-pages` branch (Vite `base: "./"`). Live:
+https://brianmills2718.github.io/claude-team-infra/
