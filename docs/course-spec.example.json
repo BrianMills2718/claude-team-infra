@@ -1,0 +1,1865 @@
+{
+ "meta": {
+  "name": "claude-team-infra",
+  "domain": "team Claude Code + Codex setup",
+  "asOf": "2026-06-23"
+ },
+ "stages": [
+  {
+   "id": "stage-0",
+   "branch": "setup-onboarding",
+   "title": "Setup & onboarding"
+  },
+  {
+   "id": "stage-1",
+   "branch": "config-memory",
+   "title": "Config & memory (CLAUDE.md, settings)"
+  },
+  {
+   "id": "stage-2",
+   "branch": "permissions-security-gov",
+   "title": "Permissions, security & governance"
+  },
+  {
+   "id": "stage-3",
+   "branch": "skills-hooks-commands",
+   "title": "Skills, hooks & commands"
+  },
+  {
+   "id": "stage-4",
+   "branch": "subagents-agent-teams",
+   "title": "Subagents & agent teams"
+  },
+  {
+   "id": "stage-5",
+   "branch": "mcp",
+   "title": "MCP (connecting tools)"
+  },
+  {
+   "id": "stage-6",
+   "branch": "plugins-distribution",
+   "title": "Plugins & distribution"
+  },
+  {
+   "id": "stage-7",
+   "branch": "automation-ci-integratio",
+   "title": "Automation, CI & integrations"
+  },
+  {
+   "id": "stage-8",
+   "branch": "optimal-use-context-cost",
+   "title": "Optimal use, context & cost"
+  },
+  {
+   "id": "stage-9",
+   "branch": "surfaces-mobility",
+   "title": "Surfaces & mobility"
+  },
+  {
+   "id": "stage-10",
+   "branch": "monitoring-analytics-tro",
+   "title": "Monitoring, analytics & troubleshooting"
+  },
+  {
+   "id": "stage-11",
+   "branch": "enterprise-providers-gat",
+   "title": "Enterprise providers & gateways"
+  }
+ ],
+ "goals": [
+  "gateway-forwarding-contr",
+  "llm-gateway",
+  "managed-mcp-governance",
+  "compaction-survival",
+  "siem-audit-logging"
+ ],
+ "primitives": [
+  "deployment-path-selectio",
+  "auth-precedence",
+  "claude-md-memory-files"
+ ],
+ "concepts": [
+  {
+   "id": "deployment-path-selectio",
+   "term": "deployment path selection",
+   "stage": "stage-0",
+   "stageIdx": 0,
+   "short": "Choosing the account/provider route (direct subscription vs cloud provider) that determines billing, auth, and which features you get before any install happens.",
+   "example": "Picking Claude for Teams/Enterprise over Bedrock because the org wants one subscription with centralized billing and Claude-on-web, rather than request-level routing by data sensitivity.",
+   "prerequisites": []
+  },
+  {
+   "id": "auth-precedence",
+   "term": "authentication precedence",
+   "stage": "stage-0",
+   "stageIdx": 0,
+   "short": "Claude Code resolves credentials through a fixed priority order, so the highest-set mechanism wins regardless of what else is configured.",
+   "example": "Setting CLAUDE_CODE_USE_BEDROCK=1 makes cloud-provider creds win over any ANTHROPIC_API_KEY, while a plain Pro user falls through to subscription OAuth from /login.",
+   "prerequisites": []
+  },
+  {
+   "id": "headless-token-auth",
+   "term": "non-interactive authentication",
+   "stage": "stage-0",
+   "stageIdx": 0,
+   "short": "Long-lived or vault-backed credentials let Claude Code run in CI and scripts where interactive browser login is impossible.",
+   "example": "Running claude setup-token to mint a one-year CLAUDE_CODE_OAUTH_TOKEN for a CI job, or using apiKeyHelper to fetch rotating keys from a vault.",
+   "prerequisites": [
+    {
+     "prereq": "auth-precedence",
+     "kind": "refines",
+     "why": "Non-interactive credentials are a specific case resolved within the auth precedence order."
+    },
+    {
+     "prereq": "deployment-path-selectio",
+     "kind": "assumes",
+     "why": "Which credential type is available depends on the chosen account/provider route."
+    }
+   ]
+  },
+  {
+   "id": "version-control-fleet",
+   "term": "fleet version control",
+   "stage": "stage-0",
+   "stageIdx": 0,
+   "short": "Keeping every team member on a consistent, non-stale Claude Code version, since some install methods auto-update and others silently don't.",
+   "example": "Pinning the fleet with managed autoUpdatesChannel=\"stable\" plus minimumVersion so a developer who installed via Homebrew can't silently run a months-old build.",
+   "prerequisites": [
+    {
+     "prereq": "deployment-path-selectio",
+     "kind": "assumes",
+     "why": "Whether installs auto-update is a property of the deployment/install method chosen."
+    }
+   ]
+  },
+  {
+   "id": "managed-settings-precede",
+   "term": "managed settings precedence",
+   "stage": "stage-0",
+   "stageIdx": 0,
+   "short": "Org-controlled policy that overrides all local user and project config, delivered through ranked sources so admins can enforce rules developers can't undo.",
+   "example": "A security team deploys permissions.deny entries via the admin console so that, even though array settings merge, a developer can extend but never remove the managed deny.",
+   "prerequisites": [
+    {
+     "prereq": "auth-precedence",
+     "kind": "refines",
+     "why": "Managed-settings precedence is the same ranked-source idea applied to org policy override."
+    }
+   ]
+  },
+  {
+   "id": "permissions-plus-sandbox",
+   "term": "permissions paired with sandboxing",
+   "stage": "stage-0",
+   "stageIdx": 0,
+   "short": "Tool-level allow/deny rules only constrain known tools, so true isolation requires combining them with OS-level filesystem and network sandboxing.",
+   "example": "Denying WebFetch doesn't stop network access because allowed Bash can run curl, so the lead also sets sandbox.network.allowedDomains to close the gap at the OS layer.",
+   "prerequisites": [
+    {
+     "prereq": "deployment-path-selectio",
+     "kind": "assumes",
+     "why": "Available sandboxing features depend on the install/provider route selected."
+    }
+   ]
+  },
+  {
+   "id": "per-repo-context-artifac",
+   "term": "per-repo onboarding artifacts",
+   "stage": "stage-0",
+   "stageIdx": 0,
+   "short": "Checked-in files at the repo root that give every team member identical project context and tooling regardless of which editor surface they use.",
+   "example": "Running /init to write a CLAUDE.md of build commands and conventions, plus a committed .mcp.json so everyone inherits the same Jira and GitHub MCP servers.",
+   "prerequisites": [
+    {
+     "prereq": "version-control-fleet",
+     "kind": "assumes",
+     "why": "Checked-in onboarding files rely on shared version-controlled repo state across the team."
+    }
+   ]
+  },
+  {
+   "id": "reusable-workflows-skill",
+   "term": "skills and hooks",
+   "stage": "stage-0",
+   "stageIdx": 0,
+   "short": "Shareable units that capture team procedures (skills, model-invoked) and enforce deterministic policy on events (hooks), distributed by checking files into the repo.",
+   "example": "Saving a /review-pr skill as .claude/skills/review-pr/SKILL.md so colleagues adopt it by copying the file, and a Stop hook that fires a lint before every commit.",
+   "prerequisites": [
+    {
+     "prereq": "per-repo-context-artifac",
+     "kind": "is-a",
+     "why": "Skills and hooks are repo-checked-in artifacts, a kind of per-repo onboarding artifact."
+    }
+   ]
+  },
+  {
+   "id": "claude-md-memory-files",
+   "term": "CLAUDE.md memory files",
+   "stage": "stage-1",
+   "stageIdx": 1,
+   "short": "Markdown instruction files loaded into every session's context to give Claude persistent guidance, discovered by walking up the directory tree with more-specific files winning on conflict.",
+   "example": "Committing a project-root CLAUDE.md that lists the team's build/test commands and 'API handlers live in src/api/handlers/', loaded alongside each teammate's personal ~/.claude/CLAUDE.md.",
+   "prerequisites": []
+  },
+  {
+   "id": "guidance-vs-enforcement",
+   "term": "guidance vs enforcement",
+   "stage": "stage-1",
+   "stageIdx": 1,
+   "short": "CLAUDE.md and rules are non-binding advice injected as context with no compliance guarantee, so anything that must never happen requires permissions, hooks, or managed settings instead.",
+   "example": "Using CLAUDE.md to say 'we run npm test before committing' (a norm) but a PreToolUse hook or deny rule to actually block secret-file reads, since 'don't read .env' in CLAUDE.md is not enforcement.",
+   "prerequisites": [
+    {
+     "prereq": "claude-md-memory-files",
+     "kind": "refines",
+     "why": "The point is that CLAUDE.md memory is advisory, contrasted with enforcement."
+    }
+   ]
+  },
+  {
+   "id": "settings-precedence-and-",
+   "term": "settings precedence and merging",
+   "stage": "stage-1",
+   "stageIdx": 1,
+   "short": "Config layers (user < project < local < CLI/env < managed) combine by merging arrays across all scopes while scalars take the most-specific value, with managed settings always winning.",
+   "example": "A team's .claude/settings.json model and a developer's settings.local.json model both apply, but the most-local model value wins, while permission allow-lists from every layer are unioned together.",
+   "prerequisites": [
+    {
+     "prereq": "managed-settings-precede",
+     "kind": "refines",
+     "why": "The merging model generalizes the managed-wins precedence idea to all config layers."
+    }
+   ]
+  },
+  {
+   "id": "scoped-config-and-commit",
+   "term": "committed vs personal config scope",
+   "stage": "stage-1",
+   "stageIdx": 1,
+   "short": "Each config artifact has a deliberate home — source-controlled for shared team config, gitignored or user-level for personal/secret state that must never be committed.",
+   "example": "Committing .claude/settings.json and .mcp.json for the team while keeping settings.local.json, CLAUDE.local.md, and ~/.claude.json (OAuth/auth state) out of version control.",
+   "prerequisites": [
+    {
+     "prereq": "settings-precedence-and-",
+     "kind": "part-of",
+     "why": "Deciding committed vs personal homes is choosing among the precedence layers."
+    },
+    {
+     "prereq": "per-repo-context-artifac",
+     "kind": "assumes",
+     "why": "Source-controlled config placement assumes the repo-artifact onboarding model."
+    }
+   ]
+  },
+  {
+   "id": "permission-rules",
+   "term": "permission rules",
+   "stage": "stage-1",
+   "stageIdx": 1,
+   "short": "Tool(pattern) allow/deny/ask entries that merge across scopes where deny always beats allow, matching commands literally rather than by semantics or executable.",
+   "example": "Adding Bash(npm run test *) to permissions.allow and Read(./.env.*) to deny, knowing Bash(rm *) won't actually block /bin/rm so a hook or sandbox is needed for a real guarantee.",
+   "prerequisites": [
+    {
+     "prereq": "permissions-plus-sandbox",
+     "kind": "part-of",
+     "why": "Tool allow/deny entries are the rule half of permissions-plus-sandbox."
+    },
+    {
+     "prereq": "settings-precedence-and-",
+     "kind": "defined-via",
+     "why": "Permission rules merge across config scopes per the precedence model."
+    }
+   ]
+  },
+  {
+   "id": "claude-md-authoring-disc",
+   "term": "CLAUDE.md authoring discipline",
+   "stage": "stage-1",
+   "stageIdx": 1,
+   "short": "Keep instruction files short (~200 lines), concrete, and verifiable because length and vagueness reduce adherence even though the file always loads in full.",
+   "example": "Splitting a bloated team CLAUDE.md into .claude/rules/*.md and moving task-specific guidance into path-scoped rules so it only loads when Claude reads a matching file.",
+   "prerequisites": [
+    {
+     "prereq": "claude-md-memory-files",
+     "kind": "refines",
+     "why": "Authoring discipline is rules for writing the memory files themselves."
+    }
+   ]
+  },
+  {
+   "id": "imports-and-path-scoped-",
+   "term": "imports and path-scoped rules",
+   "stage": "stage-1",
+   "stageIdx": 1,
+   "short": "@path imports inline another file's full contents at launch (no context savings), while rules with paths: frontmatter defer loading until Claude touches a matching file.",
+   "example": "Putting @AGENTS.md at the top of CLAUDE.md to reuse existing instructions, versus a .claude/rules/frontend.md with paths: 'src/**/*.tsx' that loads only when a React file is read.",
+   "prerequisites": [
+    {
+     "prereq": "claude-md-authoring-disc",
+     "kind": "refines",
+     "why": "Imports and path-scoped rules are context-loading techniques for instruction files."
+    }
+   ]
+  },
+  {
+   "id": "auto-memory-vs-claude-md",
+   "term": "auto memory vs CLAUDE.md",
+   "stage": "stage-1",
+   "stageIdx": 1,
+   "short": "Auto memory (MEMORY.md) is machine-local and written by Claude itself for quick-add facts, distinct from the human-authored, source-controlled CLAUDE.md.",
+   "example": "Saying 'always use pnpm' or using #-prefixed quick-add writes to per-project auto memory under ~/.claude/projects/, not to the committed CLAUDE.md the team reviews.",
+   "prerequisites": [
+    {
+     "prereq": "claude-md-memory-files",
+     "kind": "refines",
+     "why": "Defined by contrast against the human-authored CLAUDE.md."
+    }
+   ]
+  },
+  {
+   "id": "team-mcp-server-config",
+   "term": "team MCP server configuration",
+   "stage": "stage-1",
+   "stageIdx": 1,
+   "short": "Approved MCP servers are declared in a repo-root .mcp.json using absolute paths and ${ENV_VAR} secret references, requiring a one-time per-developer approval before they load.",
+   "example": "Committing .mcp.json at the repo root with a github server using ${GITHUB_TOKEN} in its env block, which each teammate approves once via /mcp on first clone.",
+   "prerequisites": [
+    {
+     "prereq": "scoped-config-and-commit",
+     "kind": "defined-via",
+     "why": ".mcp.json is a committed repo-root config artifact requiring per-dev approval."
+    }
+   ]
+  },
+  {
+   "id": "settings-scope-precedenc",
+   "term": "settings scope precedence",
+   "stage": "stage-2",
+   "stageIdx": 2,
+   "short": "The ranked layering of config sources (managed > CLI args > local project > shared project > user) that decides which value wins.",
+   "example": "A team checks .claude/settings.json into version control for shared allow/deny lists while each dev keeps personal overrides in gitignored .claude/settings.local.json.",
+   "prerequisites": [
+    {
+     "prereq": "settings-precedence-and-",
+     "kind": "refines",
+     "why": "A precise restatement of the ranked layering that decides which value wins."
+    }
+   ]
+  },
+  {
+   "id": "deny-ask-allow-evaluatio",
+   "term": "deny/ask/allow rule evaluation",
+   "stage": "stage-2",
+   "stageIdx": 2,
+   "short": "Permission rules are evaluated in the fixed order deny then ask then allow, with first match winning regardless of how specific a rule is.",
+   "example": "A broad Bash deny rule blocks a command even when a narrower Bash(npm test) allow rule also matches it.",
+   "prerequisites": [
+    {
+     "prereq": "permission-rules",
+     "kind": "refines",
+     "why": "Specifies the fixed evaluation order over permission rules."
+    }
+   ]
+  },
+  {
+   "id": "enforcement-vs-guidance",
+   "term": "enforcement vs guidance",
+   "stage": "stage-2",
+   "stageIdx": 2,
+   "short": "CLAUDE.md and prompts only shape what Claude tries to do; only permission rules, modes, hooks, and sandboxes actually grant or revoke access.",
+   "example": "Writing 'never force push' in CLAUDE.md does not guarantee it; you must add a permissions.deny rule for a hard guarantee that survives context compaction.",
+   "prerequisites": [
+    {
+     "prereq": "guidance-vs-enforcement",
+     "kind": "refines",
+     "why": "Sharpens the advisory-vs-binding distinction into the set of real enforcement levers."
+    }
+   ]
+  },
+  {
+   "id": "permission-modes",
+   "term": "permission modes",
+   "stage": "stage-2",
+   "stageIdx": 2,
+   "short": "Named operating profiles (default, acceptEdits, plan, auto, dontAsk, bypassPermissions) that set the baseline prompting behavior for tool calls.",
+   "example": "A CI pipeline uses dontAsk mode so anything that would prompt is auto-denied non-interactively, while a developer uses acceptEdits to auto-apply edits within the working directory.",
+   "prerequisites": [
+    {
+     "prereq": "permission-rules",
+     "kind": "operates-on",
+     "why": "Modes set baseline prompting behavior layered over the permission rules."
+    },
+    {
+     "prereq": "enforcement-vs-guidance",
+     "kind": "part-of",
+     "why": "Modes are one of the real enforcement levers, not advice."
+    }
+   ]
+  },
+  {
+   "id": "protected-paths",
+   "term": "protected paths",
+   "stage": "stage-2",
+   "stageIdx": 2,
+   "short": "A built-in set of sensitive dirs and files (like .git, .claude, shell rc files, .mcp.json) whose writes are never auto-approved in any mode except bypass, even by allow rules.",
+   "example": "Even with a broad allow rule and acceptEdits mode, Claude still prompts before editing a developer's .bashrc or the project's .git directory.",
+   "prerequisites": [
+    {
+     "prereq": "permission-modes",
+     "kind": "refines",
+     "why": "Protected paths are an override that holds across modes except bypass."
+    }
+   ]
+  },
+  {
+   "id": "permission-rule-syntax",
+   "term": "permission rule syntax",
+   "stage": "stage-2",
+   "stageIdx": 2,
+   "short": "The Tool(specifier) matching language with space-as-word-boundary wildcards, compound-command awareness, and path anchors that determines exactly which tool calls a rule covers.",
+   "example": "Bash(devbox run *) accidentally allows arbitrary commands because the devbox wrapper isn't stripped, so the team writes Bash(devbox run npm test) instead.",
+   "prerequisites": [
+    {
+     "prereq": "permission-rules",
+     "kind": "part-of",
+     "why": "The matching language is how a permission rule's coverage is specified."
+    }
+   ]
+  },
+  {
+   "id": "auto-mode-classifier",
+   "term": "auto mode classifier",
+   "stage": "stage-2",
+   "stageIdx": 2,
+   "short": "A per-action LLM safety gate that blocks irreversible or out-of-environment tool calls, but is a second gate rather than a hard isolation boundary, and runs after deny/ask rules.",
+   "example": "Auto mode soft-blocks a force-push, but because soft_deny can be overridden by a dev allow, the team uses permissions.deny for absolute bans and lists trusted git orgs in the environment section.",
+   "prerequisites": [
+    {
+     "prereq": "permission-modes",
+     "kind": "part-of",
+     "why": "The classifier is the safety gate behind the auto permission mode."
+    },
+    {
+     "prereq": "deny-ask-allow-evaluatio",
+     "kind": "refines",
+     "why": "It runs as a second gate after the deny/ask/allow rule evaluation."
+    }
+   ]
+  },
+  {
+   "id": "bash-sandbox-isolation",
+   "term": "Bash sandbox isolation",
+   "stage": "stage-2",
+   "stageIdx": 2,
+   "short": "OS-level enforcement (Seatbelt/bubblewrap) confining Bash and child processes to scoped filesystem and network access, the only real isolation boundary versus rule-based checks.",
+   "example": "Because the default sandbox still lets Bash read ~/.ssh and ~/.aws/credentials, and fails open if it can't start, the team adds denyRead rules and sets failIfUnavailable: true for a managed gate.",
+   "prerequisites": [
+    {
+     "prereq": "permissions-plus-sandbox",
+     "kind": "refines",
+     "why": "OS-level Bash isolation is the sandbox half made concrete."
+    },
+    {
+     "prereq": "enforcement-vs-guidance",
+     "kind": "part-of",
+     "why": "Sandboxing is the only true isolation enforcement lever."
+    }
+   ]
+  },
+  {
+   "id": "commercial-account-terms",
+   "term": "commercial account terms",
+   "stage": "stage-2",
+   "stageIdx": 2,
+   "short": "Using Team/Enterprise/API plans (not personal Free/Pro/Max) so company code and prompts are never used for training and retention is short.",
+   "example": "An org bans personal Pro/Max accounts for company code and standardizes on Team plans, where prompts aren't trained on unless they explicitly opt into the Development Partner Program.",
+   "prerequisites": [
+    {
+     "prereq": "deployment-path-selectio",
+     "kind": "refines",
+     "why": "Plan-tier data terms are a consequence of the account route chosen."
+    }
+   ]
+  },
+  {
+   "id": "settings-precedence",
+   "term": "configuration scope and precedence",
+   "stage": "stage-3",
+   "stageIdx": 3,
+   "short": "Claude Code settings resolve through ordered layers where later layers override earlier, determining which config actually takes effect.",
+   "example": "A team commits hooks to .claude/settings.json, but managed policy settings (highest layer) can impose guardrails users cannot override.",
+   "prerequisites": [
+    {
+     "prereq": "settings-scope-precedenc",
+     "kind": "refines",
+     "why": "Restates ordered-layer override as the resolution mechanism."
+    }
+   ]
+  },
+  {
+   "id": "shared-vs-personal-confi",
+   "term": "shared vs. personal config placement",
+   "stage": "stage-3",
+   "stageIdx": 3,
+   "short": "Team-standard config goes in committable files while personal or experimental config stays in user-level or gitignored files so it doesn't impose on teammates.",
+   "example": "Commit team-standard permissions to .claude/settings.json, but keep an experimental hook in gitignored .claude/settings.local.json.",
+   "prerequisites": [
+    {
+     "prereq": "settings-precedence",
+     "kind": "part-of",
+     "why": "Placement decisions are choices within the precedence layers."
+    },
+    {
+     "prereq": "scoped-config-and-commit",
+     "kind": "refines",
+     "why": "Deepens the committed-vs-personal config scope idea."
+    }
+   ]
+  },
+  {
+   "id": "hooks-lifecycle-events",
+   "term": "hooks on lifecycle events",
+   "stage": "stage-3",
+   "stageIdx": 3,
+   "short": "Hooks run deterministic logic at named, case-sensitive lifecycle events, configured as sibling keys under a single hooks object with matchers selecting when they fire.",
+   "example": "A PreToolUse hook matching Bash runs a script before every Bash tool call to audit or block the command.",
+   "prerequisites": [
+    {
+     "prereq": "enforcement-vs-guidance",
+     "kind": "part-of",
+     "why": "Hooks are a deterministic enforcement lever introduced here in detail."
+    },
+    {
+     "prereq": "reusable-workflows-skill",
+     "kind": "refines",
+     "why": "Builds out the hooks half of the skills-and-hooks shareable units."
+    }
+   ]
+  },
+  {
+   "id": "hook-exit-code-blocking",
+   "term": "hook exit-code blocking semantics",
+   "stage": "stage-3",
+   "stageIdx": 3,
+   "short": "A command hook blocks an action only with exit code 2 (stderr fed back to Claude); exit 1 and other nonzero codes are non-blocking, and exit 0 may add context.",
+   "example": "A Stop hook that exits 1 when tests fail does NOT block the stop; it must exit 2 to actually halt and report the failure.",
+   "prerequisites": [
+    {
+     "prereq": "hooks-lifecycle-events",
+     "kind": "part-of",
+     "why": "Exit-code semantics define how a command hook actually blocks."
+    }
+   ]
+  },
+  {
+   "id": "pretooluse-policy-enforc",
+   "term": "PreToolUse policy enforcement",
+   "stage": "stage-3",
+   "stageIdx": 3,
+   "short": "PreToolUse hooks fire before any permission-mode check, so a deny decision is the only way to enforce policy users cannot bypass even in skip-permissions mode.",
+   "example": "A PreToolUse hook returning permissionDecision deny blocks rm -rf even when the user launched with --dangerously-skip-permissions.",
+   "prerequisites": [
+    {
+     "prereq": "hooks-lifecycle-events",
+     "kind": "refines",
+     "why": "PreToolUse is a specific lifecycle event with strong enforcement timing."
+    },
+    {
+     "prereq": "permission-modes",
+     "kind": "refines",
+     "why": "Its power is firing before permission-mode checks, even skip-permissions."
+    }
+   ]
+  },
+  {
+   "id": "hook-matcher-syntax",
+   "term": "hook matcher and if-filter selection",
+   "stage": "stage-3",
+   "stageIdx": 3,
+   "short": "Matchers select which tool/event a hook fires on using exact, pipe-list, or regex syntax (case-sensitive), and the if filter further narrows by tool arguments but fails open.",
+   "example": "A matcher of Edit|Write fires on both edit tools, while if Bash(git *) only spawns the hook for git subcommands.",
+   "prerequisites": [
+    {
+     "prereq": "hooks-lifecycle-events",
+     "kind": "part-of",
+     "why": "Matchers/if-filters select which event a hook fires on."
+    }
+   ]
+  },
+  {
+   "id": "hook-merge-most-restrict",
+   "term": "parallel hook merge with most-restrictive-wins",
+   "stage": "stage-3",
+   "stageIdx": 3,
+   "short": "Multiple matching hooks run in parallel to completion then merge their results, with the most restrictive permission decision winning (deny > defer > ask > allow).",
+   "example": "If one PreToolUse hook says allow and another says deny for the same Bash call, the call is denied while both hooks' side effects still run.",
+   "prerequisites": [
+    {
+     "prereq": "hook-matcher-syntax",
+     "kind": "refines",
+     "why": "Multiple matched hooks merge with most-restrictive-wins."
+    },
+    {
+     "prereq": "deny-ask-allow-evaluatio",
+     "kind": "defined-via",
+     "why": "The merge orders decisions deny>defer>ask>allow, reusing rule precedence."
+    }
+   ]
+  },
+  {
+   "id": "slash-command-invocation",
+   "term": "slash command invocation and availability",
+   "stage": "stage-3",
+   "stageIdx": 3,
+   "short": "A slash command is recognized only at the start of a message with trailing text as arguments, and its presence is conditional on platform, plan, and environment.",
+   "example": "/code-review high --fix is parsed as a command with arguments, but /upgrade only appears for Pro/Max users.",
+   "prerequisites": [
+    {
+     "prereq": "reusable-workflows-skill",
+     "kind": "is-a",
+     "why": "Slash commands are a kind of shareable repo-distributed workflow unit."
+    }
+   ]
+  },
+  {
+   "id": "frontmatter-scoped-hooks",
+   "term": "component-scoped and plugin hooks",
+   "stage": "stage-3",
+   "stageIdx": 3,
+   "short": "Hooks can be distributed via plugins or scoped to a skill/agent's lifecycle through frontmatter, active only while that component is active.",
+   "example": "A skill declares a hooks: block in its frontmatter with once:true so the hook fires a single time per session while the skill is active, then removes itself.",
+   "prerequisites": [
+    {
+     "prereq": "hooks-lifecycle-events",
+     "kind": "refines",
+     "why": "Scoping hooks to plugins/components is a distribution variant of hooks."
+    }
+   ]
+  },
+  {
+   "id": "multi-context-approach-s",
+   "term": "Choosing a multi-context approach",
+   "stage": "stage-4",
+   "stageIdx": 4,
+   "short": "Claude Code offers four ways to run work in more than one context, picked by who coordinates the work and whether the workers need to talk to each other.",
+   "example": "A side task that would flood the main conversation with logs goes to a subagent; genuinely parallelizable peer work where Claude coordinates equals an agent team; a 500-file migration goes to a dynamic workflow.",
+   "prerequisites": [
+    {
+     "prereq": "enforcement-vs-guidance",
+     "kind": "assumes",
+     "why": "Choosing how to run parallel contexts assumes understanding of control levers."
+    }
+   ]
+  },
+  {
+   "id": "subagent",
+   "term": "Subagent",
+   "stage": "stage-4",
+   "stageIdx": 4,
+   "short": "A worker defined in a Markdown file (YAML frontmatter plus body-as-system-prompt) that runs in a fresh isolated context and returns only a summary to the conversation that spawned it.",
+   "example": "A reviewer subagent in .claude/agents/ that searches the repo in its own context and reports back findings without dumping every file it read into the main conversation.",
+   "prerequisites": [
+    {
+     "prereq": "multi-context-approach-s",
+     "kind": "is-a",
+     "why": "A subagent is one of the multi-context approaches being chosen among."
+    },
+    {
+     "prereq": "claude-md-memory-files",
+     "kind": "defined-via",
+     "why": "A subagent is a Markdown file with frontmatter and a body-as-system-prompt."
+    }
+   ]
+  },
+  {
+   "id": "definition-scope-precede",
+   "term": "Definition scope and precedence",
+   "stage": "stage-4",
+   "stageIdx": 4,
+   "short": "Subagent definitions resolve across ranked scopes (managed, CLI flag, project, user, plugin), and on a name collision the higher-priority or closest-to-cwd definition wins.",
+   "example": "Check a project's reviewer subagent into .claude/agents/ so the team shares it; an org-wide standard reviewer deployed via managed settings takes precedence over it.",
+   "prerequisites": [
+    {
+     "prereq": "subagent",
+     "kind": "part-of",
+     "why": "Resolution across scopes governs which subagent definition wins."
+    },
+    {
+     "prereq": "settings-scope-precedenc",
+     "kind": "refines",
+     "why": "Reuses the ranked-scope precedence model for definitions."
+    }
+   ]
+  },
+  {
+   "id": "frontmatter-configuratio",
+   "term": "Subagent frontmatter configuration",
+   "stage": "stage-4",
+   "stageIdx": 4,
+   "short": "Frontmatter fields tune each subagent's routing, tools, model, permissions, memory, and isolation so it does one focused job with the minimum capability needed.",
+   "example": "Give a reviewer disallowedTools: Write, Edit and model: haiku so it inherits read tools cheaply but cannot modify files.",
+   "prerequisites": [
+    {
+     "prereq": "subagent",
+     "kind": "part-of",
+     "why": "Frontmatter fields configure the subagent's routing and capability."
+    }
+   ]
+  },
+  {
+   "id": "tool-and-context-scoping",
+   "term": "Tool and context scoping for workers",
+   "stage": "stage-4",
+   "stageIdx": 4,
+   "short": "Limiting a worker to the minimum tools, inlining its MCP servers, and using hooks for fine-grained gating keeps capability tight and keeps tool descriptions out of the main conversation's context.",
+   "example": "A PreToolUse hook (exit code 2 to block) lets a data subagent run read-only SQL while blocking INSERT/UPDATE/DELETE that the tools allowlist cannot distinguish.",
+   "prerequisites": [
+    {
+     "prereq": "frontmatter-configuratio",
+     "kind": "refines",
+     "why": "Tool/context scoping is set through the frontmatter fields."
+    },
+    {
+     "prereq": "hook-matcher-syntax",
+     "kind": "operates-on",
+     "why": "Fine-grained gating uses hooks layered on the worker."
+    }
+   ]
+  },
+  {
+   "id": "fork-vs-fresh-subagent",
+   "term": "Fork vs fresh subagent",
+   "stage": "stage-4",
+   "stageIdx": 4,
+   "short": "A fork inherits the entire current conversation (and reuses its prompt cache) for a side task, whereas a normal subagent starts from a fresh isolated context.",
+   "example": "Use /fork to try two refactor approaches that both need the full discussion so far, instead of spawning a fresh subagent that would have to be re-briefed from scratch.",
+   "prerequisites": [
+    {
+     "prereq": "subagent",
+     "kind": "refines",
+     "why": "A fork is defined by contrast with the fresh-context subagent."
+    }
+   ]
+  },
+  {
+   "id": "agent-team",
+   "term": "Agent team",
+   "stage": "stage-4",
+   "stageIdx": 4,
+   "short": "An experimental setup where a lead Claude supervises teammates who share a task list and message each other 1:1, used for genuinely parallel work that needs peer coordination.",
+   "example": "Enable CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 and have the lead spawn three teammates to review separate layers of a change, messaging each other as they find cross-layer issues.",
+   "prerequisites": [
+    {
+     "prereq": "multi-context-approach-s",
+     "kind": "is-a",
+     "why": "An agent team is one of the multi-context approaches with peer coordination."
+    }
+   ]
+  },
+  {
+   "id": "teammate-context-and-per",
+   "term": "Teammate context and permissions",
+   "stage": "stage-4",
+   "stageIdx": 4,
+   "short": "Teammates load project context but NOT the lead's conversation history, start from the lead's permission settings, and don't inherit the lead's model, so the spawn prompt and pre-approvals must carry all task-specific detail.",
+   "example": "Put files, scope, and required output format (such as severity ratings) in the spawn prompt and pre-approve common operations before spawning, since teammate permission requests bubble up to the lead.",
+   "prerequisites": [
+    {
+     "prereq": "agent-team",
+     "kind": "part-of",
+     "why": "Teammate context/permission rules are properties of the agent team setup."
+    },
+    {
+     "prereq": "permission-modes",
+     "kind": "assumes",
+     "why": "Teammates start from the lead's permission settings."
+    }
+   ]
+  },
+  {
+   "id": "task-coordination-and-ga",
+   "term": "Task coordination and quality gating",
+   "stage": "stage-4",
+   "stageIdx": 4,
+   "short": "Teams coordinate through a shared task list with dependencies and file-locked claiming, and enforce quality via plan approval plus block-and-feedback hooks like TaskCompleted.",
+   "example": "Tell the lead to require plan approval and only approve plans that include test coverage; a TaskCompleted hook (exit code 2) blocks a teammate from marking a task done prematurely.",
+   "prerequisites": [
+    {
+     "prereq": "agent-team",
+     "kind": "part-of",
+     "why": "Shared task lists and gating are how a team coordinates work."
+    },
+    {
+     "prereq": "hooks-lifecycle-events",
+     "kind": "operates-on",
+     "why": "Quality gating uses block-and-feedback hooks like TaskCompleted."
+    }
+   ]
+  },
+  {
+   "id": "mcp-server",
+   "term": "MCP server",
+   "stage": "stage-5",
+   "stageIdx": 5,
+   "short": "An external process that gives Claude Code additional tools via the Model Context Protocol; Anthropic doesn't security-audit them, so approval is the admin's responsibility.",
+   "example": "A GitHub MCP server that lets Claude read issues and open PRs, which a team must vet before connecting.",
+   "prerequisites": [
+    {
+     "prereq": "team-mcp-server-config",
+     "kind": "refines",
+     "why": "Generalizes the team .mcp.json config into the MCP server concept and its trust model."
+    }
+   ]
+  },
+  {
+   "id": "mcp-scope",
+   "term": "MCP scope (local / project / user)",
+   "stage": "stage-5",
+   "stageIdx": 5,
+   "short": "Where a server's definition is stored, which determines who sees it and which projects it applies to; scope is fixed at add time and changing it requires remove-then-re-add.",
+   "example": "Using --scope project to write a server into .mcp.json so the whole team gets it, versus --scope user for a personal docs-search server in every project.",
+   "prerequisites": [
+    {
+     "prereq": "mcp-server",
+     "kind": "part-of",
+     "why": "Scope is where an MCP server's definition is stored."
+    },
+    {
+     "prereq": "settings-scope-precedenc",
+     "kind": "refines",
+     "why": "Server scope reuses the local/project/user scope model."
+    }
+   ]
+  },
+  {
+   "id": "config-as-code-distribut",
+   "term": "Configuration-as-code distribution",
+   "stage": "stage-5",
+   "stageIdx": 5,
+   "short": "Sharing MCP servers with a team by committing the project-scope .mcp.json to version control so every clone gets the same tools (after an approval prompt), with secrets kept out via env-var expansion.",
+   "example": "Committing .mcp.json with ${GITHUB_TOKEN} so teammates approve the server on clone but supply their own token from the environment.",
+   "prerequisites": [
+    {
+     "prereq": "mcp-scope",
+     "kind": "refines",
+     "why": "Committing project-scope .mcp.json distributes servers by scope."
+    },
+    {
+     "prereq": "scoped-config-and-commit",
+     "kind": "refines",
+     "why": "Applies committed-config distribution to MCP servers with env-var secrets."
+    }
+   ]
+  },
+  {
+   "id": "scope-precedence",
+   "term": "Scope precedence (non-merging)",
+   "stage": "stage-5",
+   "stageIdx": 5,
+   "short": "When the same server is defined in multiple places, only the entire entry from the highest-precedence source wins and fields are never merged (local > project > user > plugin > claude.ai connector).",
+   "example": "A teammate's local definition of github fully overrides the committed project entry rather than merging in its extra headers.",
+   "prerequisites": [
+    {
+     "prereq": "mcp-scope",
+     "kind": "refines",
+     "why": "Defines what wins when the same server is defined across scopes."
+    }
+   ]
+  },
+  {
+   "id": "plugin-bundled-servers",
+   "term": "Plugin-bundled MCP servers",
+   "stage": "stage-5",
+   "stageIdx": 5,
+   "short": "Packaging servers inside a plugin so they auto-start when the plugin is enabled, giving zero-touch consistency without anyone running manual add commands.",
+   "example": "Distributing the team's standard server set through a managed plugin marketplace so enabling the plugin connects every tool automatically.",
+   "prerequisites": [
+    {
+     "prereq": "mcp-server",
+     "kind": "refines",
+     "why": "Plugin-bundled servers are a packaging/distribution variant of MCP servers."
+    }
+   ]
+  },
+  {
+   "id": "mcp-authentication",
+   "term": "MCP authentication",
+   "stage": "stage-5",
+   "stageIdx": 5,
+   "short": "How Claude Code proves identity to a server: OAuth 2.0 (triggered on a 401/403), a static bearer-token header, or a headersHelper command that generates auth headers fresh at connect time.",
+   "example": "Pinning oauth.scopes in .mcp.json to restrict a server to a security-approved subset, or using headersHelper to mint a short-lived internal SSO token per connection.",
+   "prerequisites": [
+    {
+     "prereq": "mcp-server",
+     "kind": "part-of",
+     "why": "Authentication is how Claude proves identity to an MCP server."
+    }
+   ]
+  },
+  {
+   "id": "tool-search-context-budg",
+   "term": "Tool Search and context budget",
+   "stage": "stage-5",
+   "stageIdx": 5,
+   "short": "A default mechanism that defers loading tool definitions (only names load at session start, discovered on demand) so the constraint on number of servers is the context-window budget rather than a per-server cap.",
+   "example": "Adding many team servers with minimal context impact under default deferral, while marking a constantly-needed server alwaysLoad so it loads upfront.",
+   "prerequisites": [
+    {
+     "prereq": "mcp-server",
+     "kind": "operates-on",
+     "why": "Tool Search defers loading MCP tool definitions to save context."
+    }
+   ]
+  },
+  {
+   "id": "managed-mcp-governance",
+   "term": "Enterprise managed MCP governance",
+   "stage": "stage-5",
+   "stageIdx": 5,
+   "short": "Org-wide control of MCP access through admin-deployed managed settings: a managed-mcp.json for an exclusive fixed server set, plus allow/deny lists that should enforce identity by URL or command, never by user-assigned name.",
+   "example": "Deploying managed-mcp.json via MDM so users see only the approved servers, with allowedMcpServers matching on serverUrl so a user can't bypass it by renaming a server github.",
+   "prerequisites": [
+    {
+     "prereq": "scope-precedence",
+     "kind": "refines",
+     "why": "Managed MCP governance overrides via highest-precedence managed settings."
+    },
+    {
+     "prereq": "managed-settings-precede",
+     "kind": "refines",
+     "why": "Org-wide MCP control is delivered through managed settings precedence."
+    },
+    {
+     "prereq": "mcp-authentication",
+     "kind": "refines",
+     "why": "Governance should enforce identity by URL/command, an auth concern."
+    }
+   ]
+  },
+  {
+   "id": "plugin",
+   "term": "plugin",
+   "stage": "stage-6",
+   "stageIdx": 6,
+   "short": "A self-contained directory that bundles shareable Claude Code components (skills, agents, hooks, MCP/LSP servers, monitors, bin executables) under one namespace.",
+   "example": "A `formatter` plugin shipped to the whole team bundles a formatting skill plus a PostToolUse hook in one directory.",
+   "prerequisites": [
+    {
+     "prereq": "reusable-workflows-skill",
+     "kind": "refines",
+     "why": "A plugin bundles shareable components (skills, agents, hooks) under one namespace."
+    },
+    {
+     "prereq": "plugin-bundled-servers",
+     "kind": "part-of",
+     "why": "Bundled MCP servers are among the components a plugin can package."
+    }
+   ]
+  },
+  {
+   "id": "marketplace",
+   "term": "marketplace",
+   "stage": "stage-6",
+   "stageIdx": 6,
+   "short": "A catalog of plugins, defined by a marketplace.json, that you first add (register the catalog) and then install individual plugins from.",
+   "example": "An org hosts a private Git marketplace at `your-org/claude-plugins` that the team adds once, then installs the `formatter` plugin from it.",
+   "prerequisites": [
+    {
+     "prereq": "plugin",
+     "kind": "operates-on",
+     "why": "A marketplace is a catalog you install plugins from."
+    }
+   ]
+  },
+  {
+   "id": "settings-scope",
+   "term": "settings scope",
+   "stage": "stage-6",
+   "stageIdx": 6,
+   "short": "The level (user, project, local, or managed) that determines which settings file a plugin's enabled state is written to and therefore who receives it.",
+   "example": "Installing at project scope writes `enabledPlugins` into `.claude/settings.json`, so every collaborator who clones the repo gets the plugin.",
+   "prerequisites": [
+    {
+     "prereq": "settings-scope-precedenc",
+     "kind": "refines",
+     "why": "Restates the level (user/project/local/managed) that owns enabled state."
+    },
+    {
+     "prereq": "plugin",
+     "kind": "operates-on",
+     "why": "Scope determines which settings file a plugin's enabled state is written to."
+    }
+   ]
+  },
+  {
+   "id": "project-scope-vcs-distri",
+   "term": "project-scope distribution via VCS",
+   "stage": "stage-6",
+   "stageIdx": 6,
+   "short": "Sharing plugins with a whole team by committing the marketplace registration and enabled-plugins state into the repo's checked-in project settings.",
+   "example": "Committing both `extraKnownMarketplaces` and `enabledPlugins` to `.claude/settings.json` auto-prompts collaborators to install when they trust the repo folder.",
+   "prerequisites": [
+    {
+     "prereq": "settings-scope",
+     "kind": "refines",
+     "why": "Committing project-scope settings distributes plugin enablement to the team."
+    },
+    {
+     "prereq": "marketplace",
+     "kind": "operates-on",
+     "why": "Shares marketplace registration plus enabled-plugins state via VCS."
+    }
+   ]
+  },
+  {
+   "id": "managed-settings-governa",
+   "term": "managed (admin) settings",
+   "stage": "stage-6",
+   "stageIdx": 6,
+   "short": "Admin-installed, read-only settings that enforce plugin and marketplace configuration which users cannot modify or remove.",
+   "example": "An admin pushes `extraKnownMarketplaces` with `autoUpdate: true` via managed settings so every employee gets the org marketplace and can't disable it.",
+   "prerequisites": [
+    {
+     "prereq": "settings-scope",
+     "kind": "refines",
+     "why": "Managed settings are the admin-read-only level enforcing plugin config."
+    },
+    {
+     "prereq": "managed-settings-precede",
+     "kind": "refines",
+     "why": "Reuses the admin-wins managed precedence model."
+    }
+   ]
+  },
+  {
+   "id": "plugin-authoring-layout",
+   "term": "plugin authoring layout",
+   "stage": "stage-6",
+   "stageIdx": 6,
+   "short": "The required directory structure where only plugin.json lives in `.claude-plugin/` and all component dirs sit at the plugin root, with the manifest name acting as the component namespace.",
+   "example": "Converting a standalone `.claude/` config means moving `skills/` and `agents/` to the plugin root and putting only `plugin.json` in `.claude-plugin/`, then deleting the original `.claude/` files.",
+   "prerequisites": [
+    {
+     "prereq": "plugin",
+     "kind": "part-of",
+     "why": "The directory layout is the structure of a plugin's source."
+    }
+   ]
+  },
+  {
+   "id": "version-pinning-resoluti",
+   "term": "version pinning and resolution",
+   "stage": "stage-6",
+   "stageIdx": 6,
+   "short": "How a plugin's effective version is chosen (plugin.json over marketplace entry over git SHA) and how sources are pinned to a ref or SHA for reproducibility.",
+   "example": "Pinning a marketplace add to `https://gitlab.com/company/plugins.git#v1.0.0`, while community plugins are SHA-pinned so installs survive deletion of the named tag.",
+   "prerequisites": [
+    {
+     "prereq": "plugin-authoring-layout",
+     "kind": "refines",
+     "why": "Version resolution reads plugin.json from the authored layout."
+    },
+    {
+     "prereq": "marketplace",
+     "kind": "defined-via",
+     "why": "Effective version resolves across plugin.json and marketplace entry."
+    }
+   ]
+  },
+  {
+   "id": "always-on-cost-budgeting",
+   "term": "always-on token cost budgeting",
+   "stage": "stage-6",
+   "stageIdx": 6,
+   "short": "Treating each enabled plugin's standing context and MCP-server token cost as a budget to manage, shipping costly plugins as opt-in.",
+   "example": "Setting `defaultEnabled: false` so a plugin with non-deferred MCP servers (which invalidates the prompt cache) installs disabled until a user opts in.",
+   "prerequisites": [
+    {
+     "prereq": "plugin",
+     "kind": "operates-on",
+     "why": "Each enabled plugin's standing context cost is the budgeted thing."
+    },
+    {
+     "prereq": "tool-search-context-budg",
+     "kind": "refines",
+     "why": "Plugin MCP-server token cost is the context-budget concern from Tool Search."
+    }
+   ]
+  },
+  {
+   "id": "plugin-environment-varia",
+   "term": "plugin path environment variables",
+   "stage": "stage-6",
+   "stageIdx": 6,
+   "short": "Substituted path variables that let plugin content reference bundled files and persistent state correctly across updates instead of hardcoding paths.",
+   "example": "Referencing a bundled script via `${CLAUDE_PLUGIN_ROOT}` (which changes every update) and installing a venv into `${CLAUDE_PLUGIN_DATA}` so it survives updates.",
+   "prerequisites": [
+    {
+     "prereq": "plugin-authoring-layout",
+     "kind": "part-of",
+     "why": "Path variables let bundled plugin content reference files in the layout."
+    }
+   ]
+  },
+  {
+   "id": "headless-print-mode",
+   "term": "headless (print) mode",
+   "stage": "stage-7",
+   "stageIdx": 7,
+   "short": "Running Claude Code non-interactively with `claude -p` so it executes one query via the Agent SDK and exits, forming the basis for all scripting and automation.",
+   "example": "A CI job runs `claude -p \"review this diff\" --output-format json` instead of an interactive session, with many flags being print-mode-only and no-ops otherwise.",
+   "prerequisites": [
+    {
+     "prereq": "headless-token-auth",
+     "kind": "assumes",
+     "why": "Non-interactive runs require non-interactive authentication."
+    }
+   ]
+  },
+  {
+   "id": "ci-auth",
+   "term": "CI authentication",
+   "stage": "stage-7",
+   "stageIdx": 7,
+   "short": "Authenticating unattended runs without interactive sign-in, choosing between subscription billing and Console API-usage billing.",
+   "example": "A team mints a long-lived token with `claude setup-token` (subscription billing) or uses `claude auth login --console` for per-API-usage billing, never embedding interactive auth in the pipeline.",
+   "prerequisites": [
+    {
+     "prereq": "headless-token-auth",
+     "kind": "refines",
+     "why": "CI auth is non-interactive auth specialized to billing choices."
+    },
+    {
+     "prereq": "commercial-account-terms",
+     "kind": "assumes",
+     "why": "Subscription vs API-usage billing depends on the commercial plan terms."
+    }
+   ]
+  },
+  {
+   "id": "cost-loop-bounding",
+   "term": "cost and loop bounding",
+   "stage": "stage-7",
+   "stageIdx": 7,
+   "short": "Capping an automated run's agentic turns and dollar spend so a pipeline can't run away.",
+   "example": "A scheduled job sets `--max-turns 10 --max-budget-usd 5` so a misbehaving prompt stops rather than burning unbounded credits.",
+   "prerequisites": [
+    {
+     "prereq": "headless-print-mode",
+     "kind": "operates-on",
+     "why": "Bounds turns/spend on an automated print-mode run."
+    }
+   ]
+  },
+  {
+   "id": "tool-mcp-scoping",
+   "term": "tool and MCP scoping",
+   "stage": "stage-7",
+   "stageIdx": 7,
+   "short": "Controlling which tools and MCP servers an automated agent can access, distinguishing auto-approval, removal-from-context, and call-level denial.",
+   "example": "A pipeline pins a team's MCP set with `--mcp-config team.json --strict-mcp-config` and denies all MCP via `--disallowedTools \"mcp__*\"`, knowing `--allowedTools` only auto-approves rather than restricts.",
+   "prerequisites": [
+    {
+     "prereq": "headless-print-mode",
+     "kind": "operates-on",
+     "why": "Controls which tools/MCP an automated agent run can access."
+    },
+    {
+     "prereq": "tool-search-context-budg",
+     "kind": "refines",
+     "why": "Distinguishes auto-approval, context-removal, and call-level denial of tools."
+    }
+   ]
+  },
+  {
+   "id": "managed-code-review",
+   "term": "managed Code Review service",
+   "stage": "stage-7",
+   "stageIdx": 7,
+   "short": "A GitHub App service (Team/Enterprise plans) that posts inline PR review comments on configurable triggers, billed separately via usage credits and unable to approve or block on its own.",
+   "example": "An org admin enables it once, sets a repo to `After every push`, and builds their own merge gate by parsing the check run's machine-readable severity line since the check always completes neutral.",
+   "prerequisites": [
+    {
+     "prereq": "commercial-account-terms",
+     "kind": "assumes",
+     "why": "The review service is gated to Team/Enterprise plan terms."
+    }
+   ]
+  },
+  {
+   "id": "review-md",
+   "term": "REVIEW.md control file",
+   "stage": "stage-7",
+   "stageIdx": 7,
+   "short": "A short repo-root file injected verbatim as highest-priority instructions into every managed review, used to tune what counts as a blocking finding.",
+   "example": "A team's REVIEW.md redefines a red Important finding narrowly for a prototype repo, caps nits at five, and skips review of generated code and lockfiles.",
+   "prerequisites": [
+    {
+     "prereq": "managed-code-review",
+     "kind": "part-of",
+     "why": "REVIEW.md is the control file tuning the managed review."
+    }
+   ]
+  },
+  {
+   "id": "github-actions-integrati",
+   "term": "GitHub Actions integration",
+   "stage": "stage-7",
+   "stageIdx": 7,
+   "short": "Running Claude Code in GitHub-hosted CI via `anthropics/claude-code-action@v1`, triggered by a phrase or a prompt, with API keys stored as repo secrets.",
+   "example": "A repo installs the app with `/install-github-app`, stores `ANTHROPIC_API_KEY` as a secret, and gates the job with `if: contains(github.event.comment.body, '@claude')` so it only runs on mention.",
+   "prerequisites": [
+    {
+     "prereq": "headless-print-mode",
+     "kind": "refines",
+     "why": "GitHub Actions runs headless Claude Code in CI."
+    },
+    {
+     "prereq": "ci-auth",
+     "kind": "assumes",
+     "why": "Actions runs need unattended CI authentication via repo secrets."
+    }
+   ]
+  },
+  {
+   "id": "system-prompt-layering",
+   "term": "system prompt layering vs replacement",
+   "stage": "stage-7",
+   "stageIdx": 7,
+   "short": "Choosing whether to append extra instructions (preserving default tool guidance and safety) or fully replace the system prompt (dropping all defaults and owning safety yourself).",
+   "example": "A team uses `--append-system-prompt` to add a convention while keeping safety guidance, reserving full `--system-prompt` replacement for non-coding pipeline agents.",
+   "prerequisites": [
+    {
+     "prereq": "headless-print-mode",
+     "kind": "operates-on",
+     "why": "Choosing append vs replace applies to the SDK-driven print-mode run."
+    }
+   ]
+  },
+  {
+   "id": "shared-claude-md",
+   "term": "Shared CLAUDE.md",
+   "stage": "stage-8",
+   "stageIdx": 8,
+   "short": "A committed instruction file that loads into context every request and is shared with the whole team when placed at the repo root.",
+   "example": "Putting `./CLAUDE.md` in the repo root and checking it into git so every developer's Claude session inherits the same build commands and code-style rules; `CLAUDE.local.md` stays personal via .gitignore.",
+   "prerequisites": [
+    {
+     "prereq": "claude-md-memory-files",
+     "kind": "refines",
+     "why": "A repo-root committed CLAUDE.md shared with the whole team."
+    },
+    {
+     "prereq": "scoped-config-and-commit",
+     "kind": "refines",
+     "why": "Placing it at repo root is a committed-config scope decision."
+    }
+   ]
+  },
+  {
+   "id": "context-as-constraint",
+   "term": "Context as the fundamental constraint",
+   "stage": "stage-8",
+   "stageIdx": 8,
+   "short": "Performance degrades and cost rises as the 200K-token window fills, and much of it is consumed before the first prompt by config that always loads.",
+   "example": "A 400-line CLAUDE.md plus several connected MCP servers fill a large share of the window at session start, leaving less room and degrading answers on the actual task, so the file must be kept under 200 lines.",
+   "prerequisites": [
+    {
+     "prereq": "claude-md-memory-files",
+     "kind": "assumes",
+     "why": "Always-loaded config consuming the window is what makes context the constraint."
+    }
+   ]
+  },
+  {
+   "id": "feature-precedence",
+   "term": "Per-feature precedence and four config levels",
+   "stage": "stage-8",
+   "stageIdx": 8,
+   "short": "Config exists at user, project, plugin, and managed levels, but each feature type resolves conflicts by its own rule rather than a single uniform hierarchy.",
+   "example": "Skills resolve managed > user > project, but CLAUDE.md is additive (all levels contribute) and hooks merge (all matching fire), so an admin's managed policy overrides a developer's skill while every team member's hook still runs.",
+   "prerequisites": [
+    {
+     "prereq": "settings-precedence",
+     "kind": "refines",
+     "why": "Each feature type resolves conflicts by its own rule rather than one hierarchy."
+    }
+   ]
+  },
+  {
+   "id": "incremental-setup-by-tri",
+   "term": "Build setup incrementally by trigger",
+   "stage": "stage-8",
+   "stageIdx": 8,
+   "short": "Each kind of recurring friction maps to a specific config artifact, so the team's shared setup grows from observed pain rather than upfront design.",
+   "example": "A convention Claude gets wrong twice becomes a CLAUDE.md line; a pasted multi-step playbook on its third use becomes a skill; a repo needing the same setup becomes a packaged plugin.",
+   "prerequisites": [
+    {
+     "prereq": "shared-claude-md",
+     "kind": "refines",
+     "why": "Maps recurring friction to specific config artifacts grown over time."
+    }
+   ]
+  },
+  {
+   "id": "hooks-vs-advisory-config",
+   "term": "Hooks as enforcement vs advisory instructions",
+   "stage": "stage-8",
+   "stageIdx": 8,
+   "short": "CLAUDE.md is a request Claude may ignore, while hooks run deterministically at lifecycle events for anything that must happen every time.",
+   "example": "A PreToolUse hook blocks editing `.env` for the whole team, whereas a 'never edit .env' line in the shared CLAUDE.md is only a hope that can be ignored.",
+   "prerequisites": [
+    {
+     "prereq": "hooks-lifecycle-events",
+     "kind": "refines",
+     "why": "Contrasts deterministic hooks with advisory CLAUDE.md for must-happen rules."
+    },
+    {
+     "prereq": "shared-claude-md",
+     "kind": "refines",
+     "why": "The advisory side is the shared CLAUDE.md it contrasts against."
+    }
+   ]
+  },
+  {
+   "id": "context-cost-by-feature",
+   "term": "Context cost varies by feature",
+   "stage": "stage-8",
+   "stageIdx": 8,
+   "short": "Different config features charge context differently (full content, descriptions only, deferred schemas, or zero), which determines what to load eagerly versus on demand.",
+   "example": "CLAUDE.md costs its full token count every request, skills cost only their description until invoked, and MCP loads tool names upfront but defers full JSON schemas until a tool is actually used.",
+   "prerequisites": [
+    {
+     "prereq": "context-as-constraint",
+     "kind": "refines",
+     "why": "Different features charge context differently against the same window."
+    },
+    {
+     "prereq": "tool-search-context-budg",
+     "kind": "refines",
+     "why": "Deferred-schema loading is one of the per-feature context cost modes."
+    }
+   ]
+  },
+  {
+   "id": "subagent-context-isolati",
+   "term": "Subagent context isolation",
+   "stage": "stage-8",
+   "stageIdx": 8,
+   "short": "Delegating verbose work to a subagent keeps large file reads and outputs in its own window, returning only a small summary to the main session.",
+   "example": "Sending a broad codebase search to a subagent so the file contents stay in its context; the main session only receives a short summary instead of thousands of tokens, but the subagent must be passed needed context explicitly since it doesn't inherit history.",
+   "prerequisites": [
+    {
+     "prereq": "context-as-constraint",
+     "kind": "operates-on",
+     "why": "Isolating verbose work keeps it out of the main window."
+    },
+    {
+     "prereq": "subagent",
+     "kind": "refines",
+     "why": "Uses the fresh-context subagent to confine large reads/outputs."
+    }
+   ]
+  },
+  {
+   "id": "compaction-survival",
+   "term": "What survives compaction",
+   "stage": "stage-8",
+   "stageIdx": 8,
+   "short": "Auto-compaction summarizes history and re-injects only disk-backed config, so durable rules must live in files rather than conversation history.",
+   "example": "Root CLAUDE.md and invoked skill bodies are re-injected after compaction, but `paths:`-scoped rules and nested subdirectory CLAUDE.md are lost until a matching file is re-read, so persistent team rules belong in the root CLAUDE.md.",
+   "prerequisites": [
+    {
+     "prereq": "context-as-constraint",
+     "kind": "refines",
+     "why": "Compaction is triggered by the filling window and re-injects disk config."
+    },
+    {
+     "prereq": "shared-claude-md",
+     "kind": "assumes",
+     "why": "Durable rules survive only because they live in files like CLAUDE.md."
+    }
+   ]
+  },
+  {
+   "id": "model-and-effort-cost-le",
+   "term": "Model and effort selection as cost lever",
+   "stage": "stage-8",
+   "stageIdx": 8,
+   "short": "Choosing the model tier and thinking effort per task is the main spend control, since extended thinking is on by default and bills as output tokens.",
+   "example": "Defaulting the team to Sonnet for coding, reserving Opus for complex architecture, using Haiku for simple subagents, and lowering `/effort` so simple tasks don't burn tens of thousands of thinking tokens.",
+   "prerequisites": [
+    {
+     "prereq": "context-as-constraint",
+     "kind": "refines",
+     "why": "Model/effort selection is the main spend lever against context cost."
+    }
+   ]
+  },
+  {
+   "id": "prompt-caching-prefix",
+   "term": "Prompt caching by stable prefix",
+   "stage": "stage-8",
+   "stageIdx": 8,
+   "short": "The API caches by exact-prefix match across stability layers, so keeping early layers unchanged makes most input bill at a fraction of the normal rate.",
+   "example": "Keeping the system prompt and project CLAUDE.md stable lets later requests hit the cache at ~10% of input cost; switching model or effort level mid-session is part of the cache key and recomputes the whole prefix.",
+   "prerequisites": [
+    {
+     "prereq": "context-as-constraint",
+     "kind": "refines",
+     "why": "Stable-prefix caching reduces input billing on the loaded context."
+    },
+    {
+     "prereq": "feature-precedence",
+     "kind": "assumes",
+     "why": "Knowing which config loads in which order determines the stable prefix."
+    }
+   ]
+  },
+  {
+   "id": "surface-engine-config-sh",
+   "term": "surfaces share one engine and config",
+   "stage": "stage-9",
+   "stageIdx": 9,
+   "short": "Different ways to run Claude Code (CLI, Desktop, IDE, web) vary in capabilities, but several share the same engine and read the same config files, so one change can affect multiple surfaces at once.",
+   "example": "A team edits CLAUDE.md and ~/.claude/settings.json once; because CLI and Desktop run the same engine and share config, the change governs both simultaneously even on the same project.",
+   "prerequisites": [
+    {
+     "prereq": "settings-precedence",
+     "kind": "refines",
+     "why": "Surfaces sharing one engine read the same precedence-resolved config."
+    }
+   ]
+  },
+  {
+   "id": "auth-standardization",
+   "term": "auth method determines available features",
+   "stage": "stage-9",
+   "stageIdx": 9,
+   "short": "How a team authenticates (claude.ai OAuth vs API key vs governed third-party provider) silently enables or disables whole feature sets, so auth is the first team decision to standardize.",
+   "example": "An ANTHROPIC_API_KEY left in the environment silently blocks Remote Control, and Bedrock/Vertex/Foundry disable channels, voice, teleport, and Remote Control entirely.",
+   "prerequisites": [
+    {
+     "prereq": "auth-precedence",
+     "kind": "refines",
+     "why": "Standardizing the auth method is a team-level application of auth precedence."
+    },
+    {
+     "prereq": "surface-engine-config-sh",
+     "kind": "assumes",
+     "why": "Auth choice enables/disables feature sets across the shared surfaces."
+    }
+   ]
+  },
+  {
+   "id": "config-mobility",
+   "term": "config mobility across surfaces",
+   "stage": "stage-9",
+   "stageIdx": 9,
+   "short": "Each surface carries a different subset of configuration, so where you put a setting determines whether it reaches a given execution environment.",
+   "example": "Claude Code on the web sees only repo-cloned config (CLAUDE.md, .claude/settings.json, .mcp.json) and is blind to local ~/.claude, so standing instructions for cloud sessions must live in the repo.",
+   "prerequisites": [
+    {
+     "prereq": "surface-engine-config-sh",
+     "kind": "refines",
+     "why": "Each surface carries a different config subset, so placement matters."
+    }
+   ]
+  },
+  {
+   "id": "managed-settings-gating",
+   "term": "managed (admin-governed) settings",
+   "stage": "stage-9",
+   "stageIdx": 9,
+   "short": "Server-managed settings files override project and user settings and cannot be overridden by users, giving admins a central enforcement layer for org policy.",
+   "example": "An admin sets allowedChannelPlugins and disableRemoteControl in a managed settings file so developers cannot re-enable blocked channels or Remote Control.",
+   "prerequisites": [
+    {
+     "prereq": "managed-settings-governa",
+     "kind": "refines",
+     "why": "Server-managed override of project/user settings, applied to surfaces."
+    }
+   ]
+  },
+  {
+   "id": "managed-settings-distrib",
+   "term": "managed-settings distribution gap",
+   "stage": "stage-9",
+   "stageIdx": 9,
+   "short": "How a managed policy actually reaches a device differs by surface, so a centrally configured rule does not automatically apply everywhere.",
+   "example": "Admin-console pushed managed settings reach CLI and IDE but NOT Desktop, which must instead receive the managed file via MDM (macOS profile or Windows registry).",
+   "prerequisites": [
+    {
+     "prereq": "managed-settings-gating",
+     "kind": "refines",
+     "why": "How a managed policy actually reaches each surface device differs."
+    },
+    {
+     "prereq": "config-mobility",
+     "kind": "refines",
+     "why": "The distribution gap is a special case of config moving across surfaces."
+    }
+   ]
+  },
+  {
+   "id": "cloud-environments",
+   "term": "cloud session environments",
+   "stage": "stage-9",
+   "stageIdx": 9,
+   "short": "Web/remote sessions run on isolated managed VMs whose network access and setup script are defined per named environment, controlling what the agent can reach and install.",
+   "example": "A team configures a Custom-network environment with a minimal allowlist plus a setup script (appending || true to non-critical steps) so cloud sessions reach internal hosts without full egress.",
+   "prerequisites": [
+    {
+     "prereq": "surface-engine-config-sh",
+     "kind": "is-a",
+     "why": "Cloud/web sessions are a surface with isolated managed VMs."
+    },
+    {
+     "prereq": "bash-sandbox-isolation",
+     "kind": "refines",
+     "why": "Managed-VM network/setup scoping is an isolation-boundary concern."
+    }
+   ]
+  },
+  {
+   "id": "cloud-execution-workflow",
+   "term": "remote/cloud execution and teleport",
+   "stage": "stage-9",
+   "stageIdx": 9,
+   "short": "Cloud sessions are launched, moved, and traced through specific one-directional flows that require pushed branches and share account rate limits.",
+   "example": "A developer plans locally with --permission-mode plan, pushes, then runs claude --remote in the cloud, and teleports a CLI session up with claude --teleport (which needs a clean tree and pushed branch).",
+   "prerequisites": [
+    {
+     "prereq": "cloud-environments",
+     "kind": "part-of",
+     "why": "Launch/teleport flows operate on cloud session environments."
+    }
+   ]
+  },
+  {
+   "id": "ide-context-exposure",
+   "term": "IDE context exposure and hidden MCP server",
+   "stage": "stage-9",
+   "stageIdx": 9,
+   "short": "IDE integration auto-sends editor context with each prompt and exposes a hidden built-in MCP server, so allowlists and deny rules must account for what the IDE silently shares.",
+   "example": "While the VS Code ide MCP server is connected, the CLI sends the current selection and active file with every prompt, so a team adds a Read deny rule for .env and accounts for mcp__ide__* in PreToolUse allowlists.",
+   "prerequisites": [
+    {
+     "prereq": "surface-engine-config-sh",
+     "kind": "refines",
+     "why": "IDE is a surface that auto-sends editor context and a hidden MCP server."
+    },
+    {
+     "prereq": "permission-rules",
+     "kind": "operates-on",
+     "why": "Allowlists/deny rules must account for what the IDE silently shares."
+    }
+   ]
+  },
+  {
+   "id": "analytics-dashboards-ado",
+   "term": "Adoption & ROI analytics dashboards",
+   "stage": "stage-10",
+   "stageIdx": 10,
+   "short": "Hosted dashboards that surface team adoption, accept rates, and PR/line contribution so a lead can measure rollout and ROI rather than per-user cost.",
+   "example": "A lead opens claude.ai/analytics/claude-code to check the Adoption chart and uses the Leaderboard to find power users worth pairing new hires with.",
+   "prerequisites": [
+    {
+     "prereq": "auth-standardization",
+     "kind": "assumes",
+     "why": "Fleet adoption/ROI dashboards assume a standardized team deployment."
+    }
+   ]
+  },
+  {
+   "id": "github-contribution-attr",
+   "term": "GitHub contribution attribution",
+   "stage": "stage-10",
+   "stageIdx": 10,
+   "short": "The rules by which Claude Code credits code to itself — a matching window around PR merges, exclusions for rewrites and generated files, and a deliberate undercount.",
+   "example": "A PR merged today credits Claude sessions from 21 days before to 2 days after, but lock files and code the developer rewrote >20% are excluded, so low numbers don't mean low usage.",
+   "prerequisites": [
+    {
+     "prereq": "managed-code-review",
+     "kind": "assumes",
+     "why": "Attribution credits Claude's code around PR merges in the GitHub flow."
+    },
+    {
+     "prereq": "analytics-dashboards-ado",
+     "kind": "part-of",
+     "why": "Contribution attribution feeds the adoption/contribution dashboards."
+    }
+   ]
+  },
+  {
+   "id": "otel-telemetry-export",
+   "term": "OpenTelemetry cost & usage export",
+   "stage": "stage-10",
+   "stageIdx": 10,
+   "short": "Fleet-wide telemetry pushed to your own backend that the dashboards can't give you: per-user token/cost breakdowns and a SIEM audit stream.",
+   "example": "Setting CLAUDE_CODE_ENABLE_TELEMETRY=1 with an OTLP endpoint in managed settings exports claude_code.cost.usage broken down per user, model, and skill.",
+   "prerequisites": [
+    {
+     "prereq": "analytics-dashboards-ado",
+     "kind": "refines",
+     "why": "OTel export gives per-user breakdowns the hosted dashboards can't."
+    }
+   ]
+  },
+  {
+   "id": "cost-attribution-dimensi",
+   "term": "Multi-team cost attribution",
+   "stage": "stage-10",
+   "stageIdx": 10,
+   "short": "Tagging telemetry with custom resource attributes and injecting a user identity so spend can be sliced by team, department, or person on every datapoint.",
+   "example": "Setting OTEL_RESOURCE_ATTRIBUTES=department=engineering,team.id=platform lets the platform team's Claude Code spend be filtered out of an organization-wide dashboard.",
+   "prerequisites": [
+    {
+     "prereq": "otel-telemetry-export",
+     "kind": "refines",
+     "why": "Custom resource attributes slice the exported telemetry by team/person."
+    }
+   ]
+  },
+  {
+   "id": "siem-audit-logging",
+   "term": "Audit logging & SIEM integration",
+   "stage": "stage-10",
+   "stageIdx": 10,
+   "short": "Opt-in OTLP log events capturing tool calls, bash commands, permission changes, and optionally prompt/tool content, sent only to your endpoint for the SIEM to alert on.",
+   "example": "Enabling OTEL_LOG_TOOL_DETAILS=1 lets the SIEM see which Bash commands and MCP tools each engineer ran, while Claude Code emits raw events and leaves anomaly detection to the SIEM.",
+   "prerequisites": [
+    {
+     "prereq": "otel-telemetry-export",
+     "kind": "refines",
+     "why": "OTLP log events are an audit stream sent to your endpoint via the export path."
+    }
+   ]
+  },
+  {
+   "id": "in-session-cost-commands",
+   "term": "In-session cost & limit governance",
+   "stage": "stage-10",
+   "stageIdx": 10,
+   "short": "Slash commands that attribute plan-limit and token consumption to skills, subagents, plugins, and MCP servers so users can self-diagnose what is driving their costs.",
+   "example": "An engineer hitting limits runs /usage and sees that parallel subagents and cache misses, not normal prompts, are consuming most of their last 24 hours.",
+   "prerequisites": [
+    {
+     "prereq": "always-on-cost-budgeting",
+     "kind": "refines",
+     "why": "Slash commands attribute consumption to plugins/MCP/subagents at runtime."
+    },
+    {
+     "prereq": "model-and-effort-cost-le",
+     "kind": "refines",
+     "why": "They self-diagnose what drives cost, including model/effort choices."
+    }
+   ]
+  },
+  {
+   "id": "retry-capacity-resilienc",
+   "term": "Retries, capacity & fallback resilience",
+   "stage": "stage-10",
+   "stageIdx": 10,
+   "short": "Configurable retry/timeout behavior plus per-model capacity handling and ordered fallback models that keep a team working through overload incidents.",
+   "example": "During a 529 overload a user runs /model to switch to an available model, while CI jobs set CLAUDE_CODE_RETRY_WATCHDOG=1 and a fallbackModel list to ride out capacity dips.",
+   "prerequisites": [
+    {
+     "prereq": "auth-standardization",
+     "kind": "operates-on",
+     "why": "Retry/fallback keeps the standardized team working through overloads."
+    }
+   ]
+  },
+  {
+   "id": "auth-precedence-failures",
+   "term": "Auth precedence & credential failures",
+   "stage": "stage-10",
+   "stageIdx": 10,
+   "short": "The rule that environment API keys and helper scripts override interactive login, so stray or stale keys cause confusing org-disabled and 403 errors until removed.",
+   "example": "An engineer gets 'This organization has been disabled' because a previous employer's ANTHROPIC_API_KEY is loaded by direnv; /status confirms it and unsetting it lets /login take effect.",
+   "prerequisites": [
+    {
+     "prereq": "auth-precedence",
+     "kind": "refines",
+     "why": "Failure modes are stray/stale keys overriding login per the precedence rule."
+    },
+    {
+     "prereq": "auth-standardization",
+     "kind": "refines",
+     "why": "Mis-set provider keys cause org-disabled/403 errors in standardized fleets."
+    }
+   ]
+  },
+  {
+   "id": "context-window-recovery",
+   "term": "Context-window & corrupted-turn recovery",
+   "stage": "stage-10",
+   "stageIdx": 10,
+   "short": "Recognizing a full or thrashing context versus a corrupted transcript and choosing the right recovery — compaction or chunking versus rewind or a fresh session.",
+   "example": "On 'Autocompact is thrashing' the fix is chunking large file reads or moving work to a subagent, whereas a tool-block mismatch needs /rewind because it persists across --resume.",
+   "prerequisites": [
+    {
+     "prereq": "compaction-survival",
+     "kind": "refines",
+     "why": "Recovery chooses compaction/chunking vs rewind based on window/transcript state."
+    }
+   ]
+  },
+  {
+   "id": "model-pinning",
+   "term": "Model pinning",
+   "stage": "stage-11",
+   "stageIdx": 11,
+   "short": "Explicitly setting each model-tier env var to a concrete model ID/deployment so the team runs a known version instead of a drifting built-in alias default.",
+   "example": "Setting ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-4-8 before rollout so the 'opus' alias doesn't silently resolve to whatever per-provider default lags behind, and so the team upgrades on your timing, not the vendor's.",
+   "prerequisites": [
+    {
+     "prereq": "team-config-distribution",
+     "kind": "refines",
+     "why": "Pinning sets concrete model-tier env vars instead of drifting aliases."
+    }
+   ]
+  },
+  {
+   "id": "haiku-default-cost-trap",
+   "term": "Small/fast model cost trap",
+   "stage": "stage-11",
+   "stageIdx": 11,
+   "short": "If the background/small-fast model isn't pinned to a real Haiku deployment, it silently defaults to the PRIMARY model, so cheap tasks run at primary rates.",
+   "example": "Pinning ANTHROPIC_DEFAULT_HAIKU_MODEL to a real Haiku deployment so session titles and other background tasks don't get billed at Opus/Sonnet rates.",
+   "prerequisites": [
+    {
+     "prereq": "model-pinning",
+     "kind": "refines",
+     "why": "The trap is the small-fast model defaulting to primary when not pinned."
+    },
+    {
+     "prereq": "model-and-effort-cost-le",
+     "kind": "refines",
+     "why": "Unpinned cheap tasks running at primary rates is a cost-lever failure."
+    }
+   ]
+  },
+  {
+   "id": "provider-routing-precede",
+   "term": "Provider enable & routing precedence",
+   "stage": "stage-11",
+   "stageIdx": 11,
+   "short": "Which enterprise backend a request hits is decided by env-var flags with a fixed precedence order, so leftover flags silently route to the wrong provider.",
+   "example": "Leaving CLAUDE_CODE_USE_BEDROCK=1 set while intending Claude Platform on AWS sends requests to Bedrock instead, because Bedrock and Foundry take precedence over Platform-on-AWS unless you unset both.",
+   "prerequisites": [
+    {
+     "prereq": "team-config-distribution",
+     "kind": "refines",
+     "why": "Env-var flags with fixed precedence decide which backend a request hits."
+    },
+    {
+     "prereq": "auth-precedence-failures",
+     "kind": "refines",
+     "why": "Leftover flags silently route to the wrong provider, an env-precedence failure."
+    }
+   ]
+  },
+  {
+   "id": "team-config-distribution",
+   "term": "Centralized config distribution",
+   "stage": "stage-11",
+   "stageIdx": 11,
+   "short": "Pushing provider/model/auth config through the settings.json env block or enterprise managed settings rather than per-developer shell exports, treating keys as production credentials.",
+   "example": "Putting AWS_PROFILE and the workspace API key in settings.json's env block instead of each developer's .bashrc, so they don't leak to child processes and every teammate gets identical config.",
+   "prerequisites": [
+    {
+     "prereq": "settings-precedence",
+     "kind": "refines",
+     "why": "Pushes provider/model/auth config through the settings env block precedence."
+    },
+    {
+     "prereq": "managed-settings-gating",
+     "kind": "refines",
+     "why": "Enterprise managed settings centralize the distributed config."
+    }
+   ]
+  },
+  {
+   "id": "provider-credential-chai",
+   "term": "Provider auth & credential refresh",
+   "stage": "stage-11",
+   "stageIdx": 11,
+   "short": "Each backend authenticates via its cloud SDK's credential chain, with settings hooks that re-run or export credentials when they expire mid-session.",
+   "example": "Configuring awsAuthRefresh to run 'aws sso login --profile my-profile' so an SSO token expiring during a session triggers a refresh option under /login instead of failing requests.",
+   "prerequisites": [
+    {
+     "prereq": "provider-routing-precede",
+     "kind": "part-of",
+     "why": "Each routed backend authenticates via its cloud SDK credential chain."
+    }
+   ]
+  },
+  {
+   "id": "region-and-project-resol",
+   "term": "Region & project resolution order",
+   "stage": "stage-11",
+   "stageIdx": 11,
+   "short": "Region (and GCP project) are resolved through a precedence chain of env vars, profiles, and config files, so a stale value silently targets the wrong region/account.",
+   "example": "On Vertex, GOOGLE_CLOUD_PROJECT overrides ANTHROPIC_VERTEX_PROJECT_ID, so a leftover GOOGLE_CLOUD_PROJECT points the whole team at the wrong GCP project even though the 'official' project-id var is set.",
+   "prerequisites": [
+    {
+     "prereq": "provider-routing-precede",
+     "kind": "refines",
+     "why": "Region/project resolve through their own env/profile precedence chain."
+    }
+   ]
+  },
+  {
+   "id": "model-access-provisionin",
+   "term": "Model access provisioning",
+   "stage": "stage-11",
+   "stageIdx": 11,
+   "short": "Beyond auth, each provider requires explicitly enabling/approving the models or deployments (IAM/RBAC, model-access requests, portal deployments) before they can be invoked.",
+   "example": "On Vertex, Model Garden access must be requested and approved (24-48h) before any model invokes; on Foundry you must create Opus/Sonnet/Haiku deployments in the portal and match the alias env vars to those deployment names.",
+   "prerequisites": [
+    {
+     "prereq": "provider-credential-chai",
+     "kind": "refines",
+     "why": "Beyond auth, each provider must explicitly enable the models/deployments."
+    }
+   ]
+  },
+  {
+   "id": "llm-gateway",
+   "term": "LLM gateway (LiteLLM)",
+   "stage": "stage-11",
+   "stageIdx": 11,
+   "short": "A proxy in front of one or more backends that exposes a supported API format and centralizes load balancing, fallbacks, auth, and cost tracking for the whole team.",
+   "example": "Pointing ANTHROPIC_BASE_URL at a LiteLLM server's unified Anthropic endpoint so all teammates get load balancing and fallbacks, with per-user keys minted by an apiKeyHelper script (which a stray ANTHROPIC_AUTH_TOKEN would override).",
+   "prerequisites": [
+    {
+     "prereq": "provider-routing-precede",
+     "kind": "refines",
+     "why": "A gateway proxies in front of backends, centralizing routing/fallback/auth."
+    },
+    {
+     "prereq": "retry-capacity-resilienc",
+     "kind": "part-of",
+     "why": "The gateway centralizes load balancing and fallbacks for the team."
+    }
+   ]
+  },
+  {
+   "id": "gateway-forwarding-contr",
+   "term": "Gateway header/attribution contract",
+   "stage": "stage-11",
+   "stageIdx": 11,
+   "short": "A gateway must forward Anthropic beta/version headers and pass through Claude Code's session/agent ID headers, or functionality silently degrades and cost attribution breaks.",
+   "example": "Configuring the gateway to preserve anthropic-beta/anthropic-version and to read X-Claude-Code-Session-Id / X-Claude-Code-Agent-Id so per-session and per-subagent spend can be attributed without parsing request bodies.",
+   "prerequisites": [
+    {
+     "prereq": "llm-gateway",
+     "kind": "part-of",
+     "why": "The header/attribution contract is a requirement on the gateway."
+    }
+   ]
+  }
+ ]
+}
