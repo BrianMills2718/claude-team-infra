@@ -26,10 +26,12 @@ const SECTIONS = {
       type: "array",
       description: "8-16 substantive lesson sections in reading order",
       items: {
-        type: "object", additionalProperties: false, required: ["heading", "body"],
+        type: "object", additionalProperties: false, required: ["heading", "body", "targetConceptsCovered", "unverifiedClaims"],
         properties: {
           heading: { type: "string", description: "section heading" },
           body: { type: "string", description: "markdown-lite body: paragraphs, - bullets, | tables |, ``` code fences ```, and ## / ### sub-headings. Use real commands and file layouts in code fences." },
+          targetConceptsCovered: { type: "array", items: { type: "string" }, description: "List of target concept TERMS (from the CONCEPTS list) that this section introduces or covers. Empty if this section is context/connective tissue." },
+          unverifiedClaims: { type: "array", items: { type: "string" }, description: "REQUIRED: list any specific technical details (exact env var names, file paths, version numbers, setting keys, command flags) that you could NOT trace verbatim to the provided VERIFIED CLAIMS or official docs you fetched. These will be fact-checked and removed in the verify pass. Empty array if everything is sourced." },
         },
       },
     },
@@ -57,6 +59,9 @@ const results = await pipeline(
     `- Include "When to use what", tradeoffs, and "Common pitfalls / gotchas" — the WHY, edge cases, and failure modes, not just the what.\n` +
     `- Use ## and ### sub-headings inside section bodies for structure.\n` +
     `- ACCURACY IS PARAMOUNT: the verified claims above are ground truth. For any command/format/flag you are not certain of, use WebSearch/WebFetch against official docs (code.claude.com/docs, developers.openai.com/codex, agents.md, agentskills.io) before writing it. Never invent a command or flag.\n` +
+    `- GROUNDING RULE: Every specific technical detail (env var names, file paths, version numbers, exact setting keys, permission rule syntax, command flags) MUST be traceable to the VERIFIED CLAIMS above or to official docs you fetch. If you are not certain of a specific, list it in unverifiedClaims — do NOT omit it silently.\n` +
+    `- CONCEPT COVERAGE: Every concept in the CONCEPTS list MUST have at least one dedicated section covering it. If you realize you are about to finish without covering a concept, add a section.\n` +
+    `- For any section that covers config files (settings.json, managed-settings.json, .claude/settings.json, CLAUDE.md): include a COMMITTED-VS-PERSONAL comparison table showing what goes in which file and why.\n` +
     `- A short engaging opener is fine, but spend your words on depth.\n` +
     `Return the sections.`,
     { ...A, schema: SECTIONS, label: `author:${s.id}`, phase: "Author" },
@@ -65,8 +70,10 @@ const results = await pipeline(
   (authored, s) => agent(
     `You are a senior technical reviewer hardening one stage of a Claude Code + Codex team-setup course. Below are draft sections and the stage's verified claims. Your job:\n` +
     `1. FACT-CHECK every command, file format, flag, and claim against OFFICIAL docs (use WebFetch on code.claude.com/docs, developers.openai.com/codex, agents.md). Fix anything wrong or vague; make commands/paths exact.\n` +
-    `2. DEEPEN any thin section — add the missing mechanics, an example, a pitfall, or a tradeoff. Ensure there is real substance and at least one concrete code fence and one table.\n` +
-    `3. Keep it accurate to the verified claims (do not contradict them).\n\n` +
+    `2. REMOVE HALLUCINATED SPECIFICS: look at each section's unverifiedClaims array — these are specifics the author flagged as unverified. For each, either (a) confirm via WebFetch and update the claim to sourced, or (b) remove the specific entirely and describe behavior generically. Do NOT leave unverified specifics in the body.\n` +
+    `3. CHECK CONCEPT COVERAGE: ensure every concept in the CONCEPTS list has at least one section. If any concept is missing, add a concise section for it.\n` +
+    `4. DEEPEN any thin section — add the missing mechanics, an example, a pitfall, or a tradeoff. Ensure there is real substance and at least one concrete code fence and one table.\n` +
+    `5. Keep it accurate to the verified claims (do not contradict them).\n\n` +
     `STAGE: ${s.title} (${s.id})\n\nVERIFIED CLAIMS:\n` +
     s.claims.map((c) => `- ${c.statement}` + (c.sources ? ` [${c.sources.join(", ")}]` : "")).join("\n") +
     `\n\nDRAFT SECTIONS (JSON):\n${JSON.stringify(authored?.sections ?? []).slice(0, 40000)}\n\n` +
