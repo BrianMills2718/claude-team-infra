@@ -139,7 +139,7 @@ export const stage2: Lesson = {
     },
     {
       heading: "But: two engines, and no secrets",
-      body: "Codex reads AGENTS.md, not CLAUDE.md. Don't hand-maintain two files that quietly drift apart — keep ONE canonical source and project it: generate AGENTS.md from CLAUDE.md (or symlink it), and add a drift check that fails CI if they diverge. That config mirror is what lets a teammate switch between Claude Code and Codex in the same editor and get identical rules. And nothing secret goes in any of these files; reference secrets by environment variable, because the repo is shared.",
+      body: "Codex reads AGENTS.md; Claude Code reads only CLAUDE.md (never AGENTS.md). Don't hand-maintain two files that quietly drift apart — keep ONE canonical source and bridge it: make CLAUDE.md's first line `@AGENTS.md` (an import that works cross-platform with no admin), or symlink them, and add a drift check that fails CI if they diverge. That config mirror is what lets a teammate switch between Claude Code and Codex in the same editor and get identical rules. And nothing secret goes in any of these files; reference secrets by environment variable, because the repo is shared.",
     },
   ],
   visualizations: [
@@ -288,6 +288,8 @@ export const stage5: Lesson = {
   definitions: [
     { term: "managed settings", short: "Org policy that overrides local config, delivered by an admin." },
     { term: "settings precedence", short: "Managed (org) wins, then CLI, then local, then project, then user." },
+    { term: "a permission rule", short: "allow/ask/deny lists of tool-name globs (e.g. Read(./.env.*)); deny → ask → allow, and a higher-scope deny is a floor that merges in and can't be re-allowed below." },
+    { term: "permission mode", short: "An autonomy dial orthogonal to rules — default / plan (read-only) / acceptEdits / auto (classifier) / bypassPermissions." },
     { term: "seats & plan gating", short: "Claude Code is on every Team seat (Premium just adds usage); computer use & Dispatch are a Pro/Max preview, not documented for Team." },
   ],
   sections: [
@@ -297,7 +299,7 @@ export const stage5: Lesson = {
     },
     {
       heading: "Therefore: enforce a thin floor",
-      body: "Even a light-touch team enforces two or three non-negotiables via managed settings — deny secret reads, pin which plugin marketplaces can be added (installing a plugin runs its skills, hooks and MCP servers as code), ship a short security CLAUDE.md — and lets convention handle the rest. Precedence guarantees a personal setting can't loosen the org rule.",
+      body: "Even a light-touch team enforces two or three non-negotiables via managed settings — a deny permission rule on secret files (rules resolve deny → ask → allow, and because the lists merge across scopes a managed deny is a floor nobody can re-allow), pin which plugin marketplaces can be added (installing a plugin runs its skills, hooks and MCP servers as code), ship a short security CLAUDE.md — and lets convention handle the rest. (Permission modes — plan, acceptEdits, auto — are a separate dial: how aggressively Claude acts, not what's allowed.) Precedence guarantees a personal setting can't loosen the org rule.",
     },
     {
       heading: "But: know what the plan actually includes",

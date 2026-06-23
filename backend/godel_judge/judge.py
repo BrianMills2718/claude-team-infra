@@ -30,7 +30,7 @@ _PROMPT = yaml.safe_load((_HERE / "prompts" / "judge.yaml").read_text())
 # Default via OpenRouter (OPENROUTER_API_KEY) — any model, real credits, no
 # free-tier daily cap. Override with JUDGE_MODEL.
 JUDGE_MODEL = os.environ.get("JUDGE_MODEL", "openrouter/openai/gpt-5-mini")
-JUDGE_MAX_BUDGET = float(os.environ.get("JUDGE_MAX_BUDGET", "0.08"))
+JUDGE_MAX_BUDGET = float(os.environ.get("JUDGE_MAX_BUDGET", "0.25"))
 
 
 class UnknownTaskError(ValueError):
