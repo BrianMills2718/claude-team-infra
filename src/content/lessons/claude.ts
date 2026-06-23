@@ -30,7 +30,7 @@ export const stage0: Lesson = {
     },
     {
       heading: "But: Codex is a different engine",
-      body: "Your team also uses Codex (a second coding agent). It is not the same engine — so 'configure once' only spans Claude until you make things deliberately portable (we get there in stage 3). Hold that exception; it shapes the whole setup.",
+      body: "Your team also uses Codex (a second coding agent). It is not the same engine — so 'configure once' only spans Claude until you deliberately mirror your config to it (stage 2) and your skills (stage 3). Hold that exception; it shapes the whole setup.",
     },
   ],
   visualizations: [
@@ -41,7 +41,7 @@ export const stage0: Lesson = {
       columns: ["CLI", "Desktop Code", "Codex"],
       rows: [
         { label: "Same Claude Code engine", cells: { CLI: { value: "yes" }, "Desktop Code": { value: "yes" }, Codex: { value: "no" } } },
-        { label: "Reads the shared config", cells: { CLI: { value: "yes" }, "Desktop Code": { value: "yes" }, Codex: { value: "n/a", note: "via a portable bridge" } } },
+        { label: "Reads the shared config", cells: { CLI: { value: "yes" }, "Desktop Code": { value: "yes" }, Codex: { value: "n/a", note: "via a generated/symlinked mirror" } } },
       ],
     },
   ],
@@ -124,6 +124,7 @@ export const stage2: Lesson = {
   definitions: [
     { term: "CLAUDE.md", short: "Always-loaded project instructions Claude reads every session." },
     { term: "AGENTS.md", short: "The Codex-facing mirror of CLAUDE.md." },
+    { term: "the config mirror", short: "One canonical config projected to the other engine — AGENTS.md generated-or-symlinked from CLAUDE.md, with a drift check — so Claude and Codex stay in sync." },
     { term: "the .claude directory", short: "Skills, agents, hooks, and settings kept as versioned code in the repo." },
     { term: "settings.json", short: "Permissions, hooks, env — committed for the team; personal bits stay local." },
   ],
@@ -138,7 +139,7 @@ export const stage2: Lesson = {
     },
     {
       heading: "But: two engines, and no secrets",
-      body: "Codex reads AGENTS.md, not CLAUDE.md — so carry both to keep the two engines aligned. And nothing secret goes in any of these files; reference secrets by environment variable, because the repo is shared.",
+      body: "Codex reads AGENTS.md, not CLAUDE.md. Don't hand-maintain two files that quietly drift apart — keep ONE canonical source and project it: generate AGENTS.md from CLAUDE.md (or symlink it), and add a drift check that fails CI if they diverge. That config mirror is what lets a teammate switch between Claude Code and Codex in the same editor and get identical rules. And nothing secret goes in any of these files; reference secrets by environment variable, because the repo is shared.",
     },
   ],
   visualizations: [
@@ -162,6 +163,7 @@ export const stage2: Lesson = {
     { id: "q2a", type: "multiple-choice", prompt: "Where does shared project setup belong?", options: ["Each person's home .claude", "Committed .claude in the repo", "A private DM", "Nowhere"], correct: 1, explanation: "A committed .claude ships to everyone via git." },
     { id: "q2b", type: "true-false", prompt: "It's fine to put an API key in CLAUDE.md if the repo is private.", correct: false, explanation: "Never; reference secrets by env var or OAuth." },
     { id: "q2c", type: "multiple-choice", prompt: "Which file keeps Codex aligned with Claude?", options: ["AGENTS.md", "README.md", "package.json", "settings.local.json"], correct: 0, explanation: "AGENTS.md mirrors CLAUDE.md for Codex." },
+    { id: "q2d", type: "multiple-choice", prompt: "The robust way to keep CLAUDE.md and AGENTS.md in sync is to:", options: ["Hand-edit both every time", "Generate or symlink AGENTS.md from CLAUDE.md plus a drift check", "Only keep CLAUDE.md and hope Codex guesses", "Email diffs to the team"], correct: 1, explanation: "One canonical source projected to the other engine, with a CI drift check — not two hand-maintained authorities." },
   ],
   masteryCheckpoint: "You can place each piece of setup in the right file and keep both engines aligned without leaking secrets.",
 };
@@ -194,7 +196,7 @@ export const stage3: Lesson = {
     },
     {
       heading: "But: a tool only you can reach isn't a team tool",
-      body: "A skill sitting in your personal home .claude is invisible to teammates — and to Codex. Skills use an open format (SKILL.md) that both tools support, but each tool only looks in its OWN directory — Claude in .claude/skills, Codex in .agents/skills. So 'portable' means: write it once, then commit or mirror it into each tool's skills directory. (Sharing it widely is stage 4.)",
+      body: "A skill sitting in your personal home .claude is invisible to teammates — and to Codex. Skills use an open format (SKILL.md) that both tools support, but each tool only looks in its OWN directory — Claude in .claude/skills, Codex in .agents/skills. So 'portable' means: write it once, then mirror it into each tool's dir — in practice keep a portable source (e.g. ~/.agents/skills) and symlink it into each runtime surface, with the same drift check you use for the instruction mirror. (Sharing it widely is stage 4.)",
     },
   ],
   visualizations: [
