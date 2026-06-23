@@ -4,8 +4,9 @@
  * spine — not a listicle. Plain prose (no @t/@n chips → no closure debt). Each has ≥2 confusions,
  * ≥3 quiz, ≥1 visualization, a mastery checkpoint.
  */
-import type { Lesson, Section } from "../../types";
+import type { Lesson, Section, QuizQuestion } from "../../types";
 import LESSON_CONTENT from "../lesson-content.json";
+import QUIZ_CONTENT from "../quiz-content.json";
 
 export const stage0: Lesson = {
   id: "stage-0", stage: 0, title: "Start Here: One Tool, Many Front-ends",
@@ -490,5 +491,8 @@ export const stage6: Lesson = {
 // overrides the hand-written sections per stage where present; otherwise the inline
 // sections above are used. This is how the comprehensive lesson bodies are integrated.
 const AUTHORED = LESSON_CONTENT as Record<string, Section[]>;
-for (const l of [stage0, stage1, stage2, stage3, stage4, stage5, stage6])
+const QUIZZES = QUIZ_CONTENT as unknown as Record<string, QuizQuestion[]>;
+for (const l of [stage0, stage1, stage2, stage3, stage4, stage5, stage6]) {
   if (AUTHORED[l.id]?.length) l.sections = AUTHORED[l.id];
+  if (QUIZZES[l.id]?.length) l.quiz = QUIZZES[l.id]; // rigorous, misconception-targeting
+}
