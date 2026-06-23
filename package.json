@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
     "validate": "node scripts/validate-content.mjs",
-    "check": "tsc -b --noEmit && node scripts/validate-content.mjs && vite build",
+    "validate:claims": "node scripts/validate-claims.mjs",
+    "check": "tsc -b --noEmit && node scripts/validate-content.mjs && node scripts/validate-claims.mjs && vite build",
     "screenshots": "node scripts/screenshots.mjs"
   },
   "dependencies": {
