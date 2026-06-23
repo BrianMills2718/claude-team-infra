@@ -49,3 +49,32 @@ class JudgeResult(BaseModel):
     followUpQuestion: str | None = Field(
         default=None, description="A single targeted follow-up question when confidence is low; else null."
     )
+
+
+# ---------------------------------------------------------------------------
+# Lesson quiz open-ended grading (simpler than the full achievement judge)
+# ---------------------------------------------------------------------------
+
+
+class GradeQuestionRequest(BaseModel):
+    """Input for grading an individual lesson quiz question."""
+
+    questionId: str = Field(description="Question id from the lesson quiz.")
+    prompt: str = Field(description="The question prompt (shown to learner).")
+    rubric: str = Field(description="What a correct answer must demonstrate.")
+    passingCriteria: list[str] = Field(description="3-5 bullet points a passing answer covers.")
+    answer: str = Field(description="The learner's free-text answer.")
+
+
+class CriterionResult(BaseModel):
+    criterion: str = Field(description="The criterion text.")
+    met: bool = Field(description="Whether the answer satisfies this criterion.")
+
+
+class QuestionGradeResult(BaseModel):
+    """Result of grading a single open-ended quiz question."""
+
+    passed: bool = Field(description="True if the answer passes (recomputed server-side).")
+    score: float = Field(description="0..100 overall score.")
+    feedback: str = Field(description="Concise actionable feedback for the learner.")
+    criteriaResults: list[CriterionResult] = Field(description="One entry per passing criterion.")

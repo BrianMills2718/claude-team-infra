@@ -68,6 +68,7 @@ function QuestionCard({
       {q.type === "classification" && <Classification q={q} onResolved={onResolved} />}
       {q.type === "fill-in" && <FillIn q={q} onResolved={onResolved} />}
       {q.type === "matching" && <Matching q={q} onResolved={onResolved} />}
+      {q.type === "open-ended" && <OpenEnded q={q} onResolved={onResolved} />}
     </div>
   );
 }
@@ -447,5 +448,152 @@ function Classification({
         />
       )}
     </>
+  );
+}
+
+/**
+ * OpenEnded — LLM-graded free-text question.
+ *
+ * Primary path: POST /api/grade-question → structured verdict + feedback.
+ * Fallback (backend unavailable): self-grade checklist against passingCriteria.
+ * 80% of criteria met → passes in both paths.
+ */
+function OpenEnded({
+  q,
+  onResolved,
+}: {
+  q: Extract<QuizQuestion, { type: "open-ended" }>;
+  onResolved: (id: string, correct: boolean) => void;
+}) {
+  const [text, setText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<{
+    passed: boolean;
+    feedback: string;
+    criteriaResults: { criterion: string; met: boolean }[];
+  } | null>(null);
+  const [selfChecked, setSelfChecked] = useState<Set<number>>(new Set());
+  const [selfGraded, setSelfGraded] = useState(false);
+  const [usingSelfGrade, setUsingSelfGrade] = useState(false);
+
+  const MIN_CHARS = 20;
+  const canSubmit = text.trim().length >= MIN_CHARS && !submitting && result === null && !usingSelfGrade;
+
+  async function handleSubmit() {
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/grade-question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          questionId: q.id,
+          prompt: q.prompt,
+          rubric: q.rubric,
+          passingCriteria: q.passingCriteria,
+          answer: text,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = (await res.json()) as {
+        passed: boolean;
+        score: number;
+        feedback: string;
+        criteriaResults: { criterion: string; met: boolean }[];
+      };
+      setResult({ passed: data.passed, feedback: data.feedback, criteriaResults: data.criteriaResults });
+      onResolved(q.id, data.passed);
+    } catch {
+      // Backend unavailable — fall back to self-grade checklist.
+      setUsingSelfGrade(true);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function handleSelfGradeSubmit() {
+    const pct = selfChecked.size / q.passingCriteria.length;
+    const passed = pct >= 0.8;
+    setSelfGraded(true);
+    onResolved(q.id, passed);
+  }
+
+  return (
+    <div className="open-ended-q">
+      <div className="oe-rubric-hint">Rubric: {q.rubric}</div>
+      <textarea
+        className="oe-textarea"
+        placeholder={q.placeholder ?? "Write your answer here…"}
+        value={text}
+        disabled={submitting || result !== null || usingSelfGrade}
+        onChange={(e) => setText(e.target.value)}
+        rows={5}
+      />
+      <div className="oe-char-count">{text.length} characters</div>
+
+      {!result && !usingSelfGrade && (
+        <button className="quiz-submit" disabled={!canSubmit} onClick={handleSubmit}>
+          {submitting ? "Reviewing your answer…" : "Submit for review"}
+        </button>
+      )}
+
+      {submitting && (
+        <div className="oe-loading" aria-live="polite">
+          Reviewing your answer…
+        </div>
+      )}
+
+      {result && (
+        <div className={`oe-feedback ${result.passed ? "oe-pass" : "oe-fail"}`}>
+          <div className="oe-verdict">{result.passed ? "Passed" : "Not yet"}</div>
+          <p className="oe-feedback-text">{result.feedback}</p>
+          {result.criteriaResults.length > 0 && (
+            <ul className="oe-criteria">
+              {result.criteriaResults.map((cr, i) => (
+                <li key={i} className={cr.met ? "criterion-met" : "criterion-unmet"}>
+                  {cr.met ? "✓" : "✗"} {cr.criterion}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {usingSelfGrade && (
+        <div className="oe-self-grade">
+          <p className="oe-self-grade-intro">Backend unavailable. Does your answer cover these?</p>
+          <ul className="oe-criteria oe-criteria-check">
+            {q.passingCriteria.map((c, i) => (
+              <li key={i} className="criterion-self">
+                <label>
+                  <input
+                    type="checkbox"
+                    disabled={selfGraded}
+                    checked={selfChecked.has(i)}
+                    onChange={() =>
+                      setSelfChecked((s) => {
+                        const n = new Set(s);
+                        n.has(i) ? n.delete(i) : n.add(i);
+                        return n;
+                      })
+                    }
+                  />{" "}
+                  {c}
+                </label>
+              </li>
+            ))}
+          </ul>
+          {!selfGraded ? (
+            <button className="quiz-submit" onClick={handleSelfGradeSubmit}>
+              Self-grade: {selfChecked.size}/{q.passingCriteria.length} criteria met
+            </button>
+          ) : (
+            <p className="oe-self-grade-done">
+              Self-graded: {selfChecked.size}/{q.passingCriteria.length} criteria —{" "}
+              {selfChecked.size / q.passingCriteria.length >= 0.8 ? "passed" : "not yet"}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

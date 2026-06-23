@@ -40,17 +40,24 @@ writeFileSync(join(target, "src", "types.ts"), types);
 // 3. lessons — authored if provided, else valid stubs (one per stage)
 const authored = lessonsPath && existsSync(lessonsPath) ? JSON.parse(readFileSync(lessonsPath, "utf8")) : {};
 const quizzes = quizzesPath && existsSync(quizzesPath) ? JSON.parse(readFileSync(quizzesPath, "utf8")) : {};
+// quizzes JSON can have preQuiz and tasks alongside the main quiz array
+const getQuiz = (sid) => {
+  const v = quizzes[sid];
+  if (!v) return { quiz: [], preQuiz: [], tasks: [] };
+  if (Array.isArray(v)) return { quiz: v, preQuiz: [], tasks: [] };
+  return { quiz: v.quiz || [], preQuiz: v.preQuiz || [], tasks: v.tasks || [] };
+};
 const lessonObjs = spec.stages.map((s, i) => {
   const n = i;
   const concepts = spec.concepts.filter((c) => c.stage === s.id);
   const defs = concepts.slice(0, 6).map((c) => ({ term: c.term, short: c.short }));
   const sections = authored[s.id] || [{ heading: s.title, body: `This stage covers: ${concepts.map((c) => c.term).join(", ")}.` }];
-  const quiz = quizzes[s.id] || [
+  const { quiz, preQuiz, tasks } = getQuiz(s.id);
+  const effectiveQuiz = quiz.length ? quiz : [
     { id: `${s.id}-q1`, type: "multiple-choice", prompt: `Which concept belongs to "${s.title}"?`, options: [concepts[0]?.term || "—", "An unrelated idea", "None"], correct: 0, explanation: "It is introduced in this stage." },
     { id: `${s.id}-q2`, type: "true-false", prompt: `"${s.title}" is part of setting up team infrastructure.`, correct: true, explanation: "Every stage contributes to the setup." },
-    { id: `${s.id}-q3`, type: "multiple-choice", prompt: `What is the goal of this stage?`, options: ["Learn its concepts", "Nothing", "Skip it"], correct: 0, explanation: "Master the stage's concepts." },
   ];
-  return { id: s.id, stage: n, title: s.title, prerequisites: i ? [`stage-${i - 1}`] : [], defs, sections, quiz, concepts: concepts.map((c) => c.term) };
+  return { id: s.id, stage: n, title: s.title, prerequisites: i ? [`stage-${i - 1}`] : [], defs, sections, quiz: effectiveQuiz, preQuiz, tasks, concepts: concepts.map((c) => c.term) };
 });
 const lessonsTs = `import type { Lesson } from "../../types";
 export const LESSONS: Lesson[] = ${JSON.stringify(lessonObjs.map((l) => ({
@@ -60,6 +67,8 @@ export const LESSONS: Lesson[] = ${JSON.stringify(lessonObjs.map((l) => ({
   objectives: [`Understand the concepts in ${l.title}.`],
   definitions: l.defs,
   sections: l.sections,
+  ...(l.preQuiz && l.preQuiz.length ? { preQuiz: l.preQuiz } : {}),
+  ...(l.tasks && l.tasks.length ? { tasks: l.tasks } : {}),
   visualizations: [{ id: `${l.id}-v`, kind: "comparison-table", title: l.title, textualSummary: `Key concepts of ${l.title}: ${l.concepts.slice(0, 3).join(", ")}.`, columns: ["Concept", "In this stage"], rows: l.concepts.slice(0, 4).map((t) => ({ label: t, cells: { Concept: { value: "yes" }, "In this stage": { value: "yes" } } })) }],
   confusions: [{ misconception: `Skipping ${l.title}.`, correction: "Each stage is load-bearing for the setup." }, { misconception: "These concepts are interchangeable.", correction: "Each has a distinct role; see the definitions." }],
   quiz: l.quiz,

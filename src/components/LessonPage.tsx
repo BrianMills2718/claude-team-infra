@@ -4,7 +4,7 @@
  * mastery checkpoint, with prev/next navigation. Pure presentation over the
  * Lesson data object.
  */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { Lesson } from "../types";
 import { LESSONS } from "../content/lessons";
 import { RichText, RichLine } from "./Math";
@@ -12,6 +12,8 @@ import { VizRenderer } from "./viz/VizRenderer";
 import { Quiz } from "./Quiz";
 import { NotationPanel, ConceptPanel, PrereqPretest } from "./Definitions";
 import { markVisited, useProgress } from "../store/progress";
+import { PreQuizGate, collapsedByPreQuiz } from "./PreQuiz";
+import { TaskCard } from "./TaskCard";
 
 export function LessonPage({ lesson }: { lesson: Lesson }) {
   const progress = useProgress(lesson.id);
@@ -24,6 +26,10 @@ export function LessonPage({ lesson }: { lesson: Lesson }) {
   const idx = LESSONS.findIndex((l) => l.id === lesson.id);
   const prev = LESSONS[idx - 1];
   const next = LESSONS[idx + 1];
+
+  // Pre-quiz derived collapse set. expandAll overrides all collapses when true.
+  const collapsed = collapsedByPreQuiz(lesson, progress.preQuizCorrect ?? []);
+  const [expandAll, setExpandAll] = useState(false);
 
   return (
     <article className="lesson">
@@ -43,6 +49,7 @@ export function LessonPage({ lesson }: { lesson: Lesson }) {
         )}
       </header>
 
+      {lesson.preQuiz && lesson.preQuiz.length > 0 && <PreQuizGate lesson={lesson} />}
       <PrereqPretest lesson={lesson} />
       <ConceptPanel lesson={lesson} />
       <NotationPanel lesson={lesson} />
@@ -81,12 +88,59 @@ export function LessonPage({ lesson }: { lesson: Lesson }) {
         </dl>
       </section>
 
-      {lesson.sections.map((s, i) => (
-        <section className="lesson-block prose" key={i}>
-          {s.heading && <h3>{s.heading}</h3>}
-          <RichText text={s.body} />
-        </section>
-      ))}
+      {/* Section expand/collapse controls — only shown when pre-quiz collapsed some */}
+      {collapsed.size > 0 && (
+        <div className="section-controls">
+          {!expandAll && (
+            <button className="section-ctrl-btn" onClick={() => setExpandAll(true)}>
+              Expand all
+            </button>
+          )}
+          {expandAll && (
+            <button className="section-ctrl-btn" onClick={() => setExpandAll(false)}>
+              Collapse known
+            </button>
+          )}
+        </div>
+      )}
+
+      {lesson.sections.map((s, i) => {
+        const isCollapsed = !expandAll && collapsed.has(i);
+        const tasksAfter = lesson.tasks?.filter((t) => t.afterSectionIdx === i) ?? [];
+        return (
+          <div key={i}>
+            <section className={`lesson-block prose ${isCollapsed ? "section-collapsed" : ""}`}>
+              <div className={s.heading || isCollapsed ? "section-header" : ""}>
+                {s.heading && (
+                  <h3 className="section-heading">
+                    {s.heading}
+                    {isCollapsed && <span className="section-known-badge">you knew this</span>}
+                  </h3>
+                )}
+                {!s.heading && isCollapsed && (
+                  <div className="section-known-badge-inline">you knew this section</div>
+                )}
+                {collapsed.has(i) && (
+                  <button
+                    className="section-toggle"
+                    aria-label={isCollapsed ? "Expand section" : "Collapse section"}
+                    onClick={() => {
+                      if (isCollapsed) setExpandAll(true);
+                      else setExpandAll(false);
+                    }}
+                  >
+                    {isCollapsed ? "▶" : "▼"}
+                  </button>
+                )}
+              </div>
+              {!isCollapsed && <RichText text={s.body} />}
+            </section>
+            {tasksAfter.map((task) => (
+              <TaskCard key={task.id} lessonId={lesson.id} task={task} />
+            ))}
+          </div>
+        );
+      })}
 
       {lesson.visualizations.map((v) => (
         <section className="lesson-block" key={v.id}>
