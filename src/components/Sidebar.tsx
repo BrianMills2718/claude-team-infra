@@ -17,8 +17,8 @@ export function Sidebar({ route, onOpenGlossary }: { route: Route; onOpenGlossar
   return (
     <nav className="sidebar" aria-label="Navigation">
       <div className="sidebar-head">
-        <h1 className="brand">The Concept Ladder</h1>
-        <p className="brand-sub">A skill map for Gödel's incompleteness.</p>
+        <h1 className="brand">Team AI Infra</h1>
+        <p className="brand-sub">Set up your team's shared Claude Code + Codex.</p>
       </div>
 
       <a href="#/tree" className={`tree-link ${route.kind === "tree" ? "active" : ""}`}>
@@ -31,7 +31,7 @@ export function Sidebar({ route, onOpenGlossary }: { route: Route; onOpenGlossar
       <div className="sidebar-goal">
         <span className="sg-label">Goal</span>
         <span className="sg-title">{goal?.title ?? "—"}</span>
-        <span className="sg-progress">{passed.size} / {LESSONS.length + 13} nodes passed</span>
+        <span className="sg-progress">{passed.size} / {LESSONS.length + 1} nodes passed</span>
       </div>
 
       <div className="nav-section">Recommended path</div>

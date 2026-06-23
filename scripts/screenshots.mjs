@@ -17,15 +17,15 @@ mkdirSync(OUT, { recursive: true });
 
 // [route, name, optional expand-the-panels?]
 const SHOTS = [
-  ["", "home-skilltree", false],      // skill-tree edge routing + labels
-  ["stage-1", "stage1-concepts", true], // concept panel (ADR-0002) + chips
-  ["stage-2", "stage2-graph", false], // typed-graph edge routing fix
-  ["stage-3", "stage3-defs", true],   // inline chips + notation rollup
-  ["stage-6", "stage6-table", false], // markdown pipe table
-  ["stage-11", "stage11-lists", false], // bullet lists
-  ["stage-0", "stage0-table", false], // comparison-table viz
-  ["stage-12", "stage12-encoder", false], // coding encoder
-  ["stage-14", "stage14-loop", false], // godel loop
+  ["", "home-skilltree", false],        // skill-tree edge routing + labels
+  ["concepts", "concepts-graph", false], // concept-graph view
+  ["stage-0", "stage0-orientation", true], // comparison-table viz + concept panel
+  ["stage-1", "stage1-surfaces", true],  // concept panel + chips
+  ["stage-2", "stage2-config", false],   // comparison-table
+  ["stage-3", "stage3-caps", true],      // concept panel
+  ["stage-4", "stage4-dist", false],     // comparison-table
+  ["stage-5", "stage5-gov", false],      // comparison-table
+  ["stage-6", "stage6-decision", false], // four-drawer table + capstone link
 ];
 
 const browser = await puppeteer.launch({

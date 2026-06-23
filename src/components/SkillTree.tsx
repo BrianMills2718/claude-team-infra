@@ -132,8 +132,8 @@ export function SkillTree() {
     <div className="skill-tree">
       <p className="st-intro">
         Choose a goal, then start with the highlighted <strong>available</strong> node. Each node you
-        pass unlocks the next prerequisite. The map's job is to keep <em>syntax, proof, truth, coding,
-        and metatheory</em> separate — that separation is the whole point.
+        pass unlocks the next prerequisite. The map's job is to take you from <em>the surfaces</em> to a
+        justified <em>shared setup across Claude Code and Codex</em> — one decision, in the right tiers.
       </p>
       <div className="st-toolbar">
         <div className="st-goal">
