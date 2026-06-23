@@ -23,13 +23,27 @@ const QUIZ = {
       type: "array", description: "5-7 rigorous questions",
       items: {
         type: "object", additionalProperties: false,
-        required: ["type", "prompt", "options", "correct", "explanation"],
+        required: ["type", "prompt", "options", "correct", "explanation", "testedConcept", "contentSource"],
         properties: {
           type: { type: "string", description: "single (one right answer) or multi (select all that apply)" },
           prompt: { type: "string" },
-          options: { type: "array", items: { type: "string" }, description: "3-5 options; for a true/false, use exactly [\"True\",\"False\"]" },
+          options: {
+            type: "array",
+            description: "3-5 options. For each WRONG option you MUST include a misconceptionTargeted field in the optionMetadata array (same index) naming the real belief it encodes.",
+            items: { type: "string" },
+          },
+          optionMetadata: {
+            type: "array",
+            description: "parallel to options — one entry per option. For correct options, misconceptionTargeted is empty string. For wrong options, misconceptionTargeted MUST be non-empty: describe the real misconception this distractor catches.",
+            items: {
+              type: "object", additionalProperties: false, required: ["misconceptionTargeted"],
+              properties: { misconceptionTargeted: { type: "string" } },
+            },
+          },
           correct: { type: "array", items: { type: "integer" }, description: "indices of the correct option(s); one for single, one-or-more for multi" },
           explanation: { type: "string", description: "why the answer is right AND why the tempting distractors are wrong" },
+          testedConcept: { type: "string", description: "the specific concept term or claim this question tests" },
+          contentSource: { type: "string", description: "REQUIRED: the exact sentence or claim from the CONTENT or VERIFIED CLAIMS that makes the correct answer true. Quote it directly. If you cannot find a quote, the question is testing unverified content — rewrite it." },
         },
       },
     },
@@ -43,10 +57,11 @@ const results = await pipeline(
   stages,
   (s) => agent(
     `Write 5-7 RIGOROUS assessment questions for this stage of a course on setting up a team's shared Claude Code + Codex infrastructure. The current quiz was rejected as "trivial and obvious" — recognition-level recall. Yours must be HARD in the right way:\n` +
-    `- Require APPLICATION and DISTINGUISHING subtle cases, not definition recall. Prefer scenarios: "A teammate does X and Y happens — why?" / "Which of these belongs in managed settings vs project settings vs a plugin?" / "You expected A, got B — what changed?"\n` +
-    `- Every WRONG option must encode a COMMON MISCONCEPTION (a plausible belief a real practitioner holds), not an obvious throwaway. The question should catch someone who skimmed.\n` +
+    `- Require APPLICATION and DISTINGUISHING subtle cases, not definition recall. At least 3 of 7 questions MUST be scenarios: "A teammate does X and Y happens — why?" / "Which of these belongs in managed settings vs project settings vs a plugin?" / "You expected A, got B — what changed?"\n` +
+    `- Every WRONG option must encode a COMMON MISCONCEPTION (a plausible belief a real practitioner holds), not an obvious throwaway. Fill the optionMetadata[i].misconceptionTargeted field for every wrong option with the specific misconception it catches.\n` +
     `- Include at least two "select all that apply" (type=multi) questions.\n` +
-    `- Ground every question and its key in the CONTENT and CLAIMS below — do not test anything not supported there. Be precise about exact behavior (flags, file names, precedence, deny-first, what Claude reads, plan gating, etc.).\n` +
+    `- GROUNDING RULE: Every question's correct answer MUST be traceable to a specific sentence in the CONTENT or a specific VERIFIED CLAIM below. Fill contentSource with the exact quote. If you cannot quote it, the question tests unverified content — remove or rewrite it.\n` +
+    `- PROHIBITION: Do not write questions that hinge on specific version numbers (v2.x.x), exact env var names, or exact file paths UNLESS those exact strings appear word-for-word in the CONTENT or VERIFIED CLAIMS below. Test behavior, not trivia about implementation details.\n` +
     `- Each explanation must say why the right answer is right AND why the tempting distractors are wrong.\n\n` +
     `STAGE: ${s.title} (${s.id})\nKEY CONCEPTS: ${s.concepts.join(", ")}\n\nVERIFIED CLAIMS:\n` +
     s.claims.map((c) => `- ${c}`).join("\n") +

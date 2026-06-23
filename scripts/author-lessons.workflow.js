@@ -30,6 +30,8 @@ const SECTIONS = {
         properties: {
           heading: { type: "string", description: "section heading" },
           body: { type: "string", description: "markdown-lite body: paragraphs, - bullets, | tables |, ``` code fences ```, and ## / ### sub-headings. Use real commands and file layouts in code fences." },
+          targetConceptsCovered: { type: "array", items: { type: "string" }, description: "list of target concept TERMS (from the stage definition) that this section directly teaches. At least one section must cover every listed target concept." },
+          unverifiedClaims: { type: "array", items: { type: "string" }, description: "REQUIRED: list any specific technical details in this section (version numbers, env var names, file paths, setting key names, exact CLI flags) that you could NOT trace verbatim to the provided verified claims or official docs. If you are confident everything is sourced, return an empty array." },
         },
       },
     },
@@ -57,6 +59,9 @@ const results = await pipeline(
     `- Include "When to use what", tradeoffs, and "Common pitfalls / gotchas" — the WHY, edge cases, and failure modes, not just the what.\n` +
     `- Use ## and ### sub-headings inside section bodies for structure.\n` +
     `- ACCURACY IS PARAMOUNT: the verified claims above are ground truth. For any command/format/flag you are not certain of, use WebSearch/WebFetch against official docs (code.claude.com/docs, developers.openai.com/codex, agents.md, agentskills.io) before writing it. Never invent a command or flag.\n` +
+    `- GROUNDING RULE: Before including any specific technical detail — version numbers (v2.x.x), environment variable names (ALL_CAPS), exact file paths, exact CLI flag names, exact setting key names, exact behavioral rules — verify it appears verbatim or paraphrase-equivalent in the provided VERIFIED CLAIMS or official docs. If you cannot trace it to a source, OMIT IT or use a generic description. Do not add plausible-sounding specifics that are not in the provided material.\n` +
+    `- CONCEPT COVERAGE: The stage defines specific target concepts. Every listed target concept MUST have at least one lesson section that directly explains it. If you finish drafting and a concept has no coverage, ADD A SECTION. List covered concept terms in each section's targetConceptsCovered field.\n` +
+    `- COMMITTED-VS-PERSONAL TABLE: For any section covering configuration files, include an explicit table mapping each artifact to: committed-to-VCS | gitignored | never-commit. This prevents the recurring omission of the personal-config boundary.\n` +
     `- A short engaging opener is fine, but spend your words on depth.\n` +
     `Return the sections.`,
     { ...A, schema: SECTIONS, label: `author:${s.id}`, phase: "Author" },
@@ -65,8 +70,10 @@ const results = await pipeline(
   (authored, s) => agent(
     `You are a senior technical reviewer hardening one stage of a Claude Code + Codex team-setup course. Below are draft sections and the stage's verified claims. Your job:\n` +
     `1. FACT-CHECK every command, file format, flag, and claim against OFFICIAL docs (use WebFetch on code.claude.com/docs, developers.openai.com/codex, agents.md). Fix anything wrong or vague; make commands/paths exact.\n` +
-    `2. DEEPEN any thin section — add the missing mechanics, an example, a pitfall, or a tradeoff. Ensure there is real substance and at least one concrete code fence and one table.\n` +
-    `3. Keep it accurate to the verified claims (do not contradict them).\n\n` +
+    `2. REMOVE HALLUCINATED SPECIFICS: Look at each section's unverifiedClaims list. For any claim flagged there, either (a) fetch the official doc and confirm the exact string, or (b) remove or generalize it. Do not publish specific version numbers, env var names, or file paths that cannot be traced to a source.\n` +
+    `3. CONCEPT COVERAGE: Check that the draft covers ALL target concepts. For any concept not yet covered, add a new section.\n` +
+    `4. DEEPEN any thin section — add the missing mechanics, an example, a pitfall, or a tradeoff. Ensure there is real substance and at least one concrete code fence and one table.\n` +
+    `5. Keep it accurate to the verified claims (do not contradict them).\n\n` +
     `STAGE: ${s.title} (${s.id})\n\nVERIFIED CLAIMS:\n` +
     s.claims.map((c) => `- ${c.statement}` + (c.sources ? ` [${c.sources.join(", ")}]` : "")).join("\n") +
     `\n\nDRAFT SECTIONS (JSON):\n${JSON.stringify(authored?.sections ?? []).slice(0, 40000)}\n\n` +
