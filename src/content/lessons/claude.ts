@@ -141,6 +141,25 @@ export const stage2: Lesson = {
       heading: "But: two engines, and no secrets",
       body: "Codex reads AGENTS.md; Claude Code reads only CLAUDE.md (never AGENTS.md). Don't hand-maintain two files that quietly drift apart — keep ONE canonical source and bridge it: make CLAUDE.md's first line `@AGENTS.md` (an import that works cross-platform with no admin), or symlink them, and add a drift check that fails CI if they diverge. That config mirror is what lets a teammate switch between Claude Code and Codex in the same editor and get identical rules. And nothing secret goes in any of these files; reference secrets by environment variable, because the repo is shared.",
     },
+    {
+      heading: "Concretely: what you commit",
+      body: `Here is the actual layout a teammate clones. Everything here is committed except the personal override; accepting the workspace-trust dialog on first run activates it.
+
+\`\`\`
+your-repo/
+  CLAUDE.md             # always-loaded instructions; first line is @AGENTS.md
+  AGENTS.md             # Codex's file: a symlink to (or @import of) CLAUDE.md
+  .mcp.json             # project MCP servers, shared (secret values via \${ENV})
+  .claude/
+    settings.json       # shared: permission rules, hooks, env
+    settings.local.json # personal — add to .gitignore
+    skills/             # project skills (each a SKILL.md folder)
+    agents/             # subagents
+    hooks/              # hook scripts
+\`\`\`
+
+Rule of thumb: if a teammate needs it to behave like you, it goes in a committed file. If it is personal (your model preference, your API profile), it goes in settings.local.json. Secrets never go in any of these — reference an environment variable and keep the value in your shell or a secret manager.`,
+    },
   ],
   visualizations: [
     {
@@ -198,6 +217,43 @@ export const stage3: Lesson = {
       heading: "But: a tool only you can reach isn't a team tool",
       body: "A skill sitting in your personal home .claude is invisible to teammates — and to Codex. Skills use an open format (SKILL.md) that both tools support, but each tool only looks in its OWN directory — Claude in .claude/skills, Codex in .agents/skills. So 'portable' means: write it once, then mirror it into each tool's dir — in practice keep a portable source (e.g. ~/.agents/skills) and symlink it into each runtime surface, with the same drift check you use for the instruction mirror. (Sharing it widely is stage 4.)",
     },
+    {
+      heading: "Concretely: the file formats",
+      body: `Each capability is a small file you commit. A skill is a folder whose SKILL.md frontmatter description is its trigger — keep the body lean (progressive disclosure) and link heavy references instead of inlining them:
+
+\`\`\`
+.claude/skills/release-notes/SKILL.md
+---
+name: release-notes
+description: Draft a changelog from git history. Use when asked for release notes.
+---
+1. Run: git log --oneline <last-tag>..HEAD
+2. Group commits by type; write a one-line summary per group.
+\`\`\`
+
+A hook is wired in settings.json against a lifecycle event and a matcher (it runs deterministically, whatever the model decides):
+
+\`\`\`
+// .claude/settings.json
+{ "hooks": { "PostToolUse": [
+  { "matcher": "Edit|Write",
+    "hooks": [{ "type": "command", "command": "npm run lint" }] }
+] } }
+\`\`\`
+
+An MCP server is declared in .mcp.json, with secret values pulled from the environment, never hard-coded:
+
+\`\`\`
+// .mcp.json
+{ "mcpServers": {
+  "github": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-github"],
+    "env": { "GITHUB_TOKEN": "\${GITHUB_TOKEN}" } } } }
+\`\`\`
+
+To make the same skill work in Codex, place or symlink that SKILL.md under .agents/skills/ as well — Codex reads there, Claude reads .claude/skills/. A tool that is just a command (a CLI) needs none of this: document it in CLAUDE.md and let the agent run it — prefer that over an MCP server for simple, stateless tools.`,
+    },
   ],
   visualizations: [
     {
@@ -249,6 +305,53 @@ export const stage4: Lesson = {
     {
       heading: "But: a shelf needs version hygiene",
       body: "Without versions, 'latest' drifts under people. Bump the plugin's version on each release (or let each git commit count as a version) so installs are predictable.",
+    },
+    {
+      heading: "Concretely: sharing one repo with your team",
+      body: "Smallest case first — you already have it. One repo, one team: commit .claude/, CLAUDE.md, and .mcp.json (stage 2). A teammate clones the repo and accepts the trust dialog, and your skills, sub-agents, hooks, MCP servers, and rules are all there. No install step, no marketplace. Reach for plugins only when MORE than one repo wants the same tools.",
+    },
+    {
+      heading: "Concretely: sharing across many repos (plugin + marketplace)",
+      body: `When several repos want the same capabilities, stop copying. Bundle them into a plugin — a folder with a manifest plus the capabilities it ships:
+
+\`\`\`
+team-tools/
+  .claude-plugin/plugin.json   # { "name": "team-tools", "version": "1.2.0" }
+  skills/        # SKILL.md folders
+  agents/        # subagents
+  hooks/         # hook scripts + hooks config
+  .mcp.json      # MCP servers the plugin ships
+\`\`\`
+
+A marketplace is just a git repo that catalogs plugins:
+
+\`\`\`
+team-marketplace/            (a git repo, e.g. your-org/team-marketplace)
+  .claude-plugin/marketplace.json
+  # { "name": "team",
+  #   "plugins": [ { "name": "team-tools", "source": "./team-tools" } ] }
+\`\`\`
+
+Each teammate runs three commands, once:
+
+\`\`\`
+/plugin marketplace add your-org/team-marketplace   # add the catalog (once)
+/plugin install team-tools@team                     # install what they need
+/plugin marketplace update                          # later: pull new versions
+\`\`\`
+
+To make the repo auto-enable the plugin for everyone who clones it, commit the choice to .claude/settings.json:
+
+\`\`\`
+// .claude/settings.json
+{ "enabledPlugins": { "team-tools@team": true } }
+\`\`\`
+
+That is the whole distribution loop: build once, install everywhere, update by pushing a new version to the marketplace repo.`,
+    },
+    {
+      heading: "Concretely: Codex, and org guardrails",
+      body: "Two more layers sit on top. For Codex, mirror the plugin's skills into .agents/skills (the config mirror from stage 2) so one library serves both engines. For org-wide safety, an admin sets managed settings — allowedMcpServers to whitelist which MCP servers may run, and strictKnownMarketplaces to pin which marketplaces can be added — so the shared library can't be subverted by an untrusted plugin. That is the full picture: commit for one repo, plugin-plus-marketplace for many, managed settings for the must-nots, mirror for Codex.",
     },
   ],
   visualizations: [

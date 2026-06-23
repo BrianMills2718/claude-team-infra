@@ -114,7 +114,10 @@ type Block =
   | { kind: "p"; lines: string[] }
   | { kind: "ul"; items: string[] }
   | { kind: "ol"; items: string[] }
+  | { kind: "code"; lines: string[] }
   | { kind: "table"; header: string[]; rows: string[][] };
+
+const isFence = (l: string) => /^```/.test(l.trim());
 
 const isBullet = (l: string) => /^-\s+/.test(l);
 const isOrdered = (l: string) => /^\d+\.\s+/.test(l);
@@ -131,7 +134,14 @@ function parseBlocks(text: string): Block[] {
     const line = lines[i];
     if (line.trim() === "") { i++; continue; }
 
-    if (isTableRow(line) && i + 1 < lines.length && isTableSep(lines[i + 1])) {
+    if (isFence(line)) {
+      // Fenced code block: verbatim until the closing ``` (or end of text).
+      i++;
+      const code: string[] = [];
+      while (i < lines.length && !isFence(lines[i])) { code.push(lines[i]); i++; }
+      if (i < lines.length) i++; // consume closing fence
+      blocks.push({ kind: "code", lines: code });
+    } else if (isTableRow(line) && i + 1 < lines.length && isTableSep(lines[i + 1])) {
       const header = splitCells(line);
       i += 2;
       const rows: string[][] = [];
@@ -177,6 +187,11 @@ function parseBlocks(text: string): Block[] {
 
 function renderBlock(b: Block, key: number): ReactNode {
   switch (b.kind) {
+    case "code":
+      // Verbatim — no inline parsing, so commands/file-trees render as written.
+      return (
+        <pre className="md-code" key={key}><code>{b.lines.join("\n")}</code></pre>
+      );
     case "p":
       // <div> not <p>: a paragraph may contain block math ($$) which renders a
       // <div>, illegal inside <p>.

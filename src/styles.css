@@ -532,6 +532,15 @@ kbd {
 /* KaTeX inline sizing tweak */
 .tex-error { color: var(--metatheory); font-family: ui-monospace, monospace; }
 
+/* Fenced code blocks in lesson prose — commands & file layouts */
+.md-code {
+  background: #0f172a; color: #e2e8f0; border-radius: 8px;
+  padding: 12px 14px; margin: 12px 0; overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px; line-height: 1.5; white-space: pre;
+}
+.md-code code { font-family: inherit; color: inherit; background: none; padding: 0; }
+
 /* ------------------------- Open Debates --------------------------- */
 .debates-view { max-width: 900px; margin: 0 auto; padding: 28px 28px 64px; }
 .dv-head h1 { margin: 0 0 8px; font-size: 24px; }
