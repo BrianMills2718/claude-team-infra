@@ -9,16 +9,18 @@ import { useEffect, useState } from "react";
 import { SkillTree } from "./components/SkillTree";
 import { NodeDetail } from "./components/NodeDetail";
 import { ConceptGraphView } from "./components/ConceptGraphView";
+import { DebatesView } from "./components/DebatesView";
 import { Sidebar } from "./components/Sidebar";
 import { GlossaryDrawer } from "./components/GlossaryDrawer";
 import { nodeForLesson } from "./content/graph";
 
-type Route = { kind: "tree" } | { kind: "node"; id: string } | { kind: "concepts" };
+type Route = { kind: "tree" } | { kind: "node"; id: string } | { kind: "concepts" } | { kind: "debates" };
 
 function parse(hash: string): Route {
   const h = hash.replace(/^#\/?/, "");
   if (h === "" || h === "tree") return { kind: "tree" };
   if (h === "concepts") return { kind: "concepts" };
+  if (h === "debates") return { kind: "debates" };
   if (h.startsWith("node/")) return { kind: "node", id: h.slice(5) };
   if (h.startsWith("stage-")) {
     const n = nodeForLesson(h);
@@ -64,6 +66,8 @@ export function App() {
           <SkillTree />
         ) : route.kind === "concepts" ? (
           <ConceptGraphView />
+        ) : route.kind === "debates" ? (
+          <DebatesView />
         ) : (
           <NodeDetail nodeId={route.id} />
         )}

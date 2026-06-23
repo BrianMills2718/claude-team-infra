@@ -532,10 +532,28 @@ kbd {
 /* KaTeX inline sizing tweak */
 .tex-error { color: var(--metatheory); font-family: ui-monospace, monospace; }
 
+/* ------------------------- Open Debates --------------------------- */
+.debates-view { max-width: 900px; margin: 0 auto; padding: 28px 28px 64px; }
+.dv-head h1 { margin: 0 0 8px; font-size: 24px; }
+.dv-intro { color: var(--ink-soft); font-size: 15px; line-height: 1.55; margin: 0 0 8px; }
+.dv-list { list-style: none; margin: 24px 0 0; padding: 0; display: flex; flex-direction: column; gap: 20px; }
+.dv-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+.dv-question { margin: 0 0 14px; font-size: 17px; line-height: 1.4; }
+.dv-positions { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.dv-position { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--bg); display: flex; flex-direction: column; gap: 8px; }
+.dv-badge { align-self: flex-start; font-family: ui-monospace, monospace; font-size: 12px; font-weight: 600; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: 999px; padding: 2px 10px; }
+.dv-claim { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ink); }
+.dv-sources { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+.dv-source { font-size: 12px; color: var(--accent); text-decoration: none; border-bottom: 1px dotted currentColor; }
+.dv-source:hover { text-decoration: none; opacity: 0.8; }
+.dv-foot { display: flex; align-items: baseline; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.dv-foot-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+
 /* ------------------------- Responsive ----------------------------- */
 @media (max-width: 820px) {
   .app { grid-template-columns: 1fr; }
   .sidebar { position: sticky; top: 0; max-height: 38vh; }
+  .dv-positions { grid-template-columns: 1fr; }
   .lesson { padding: 24px 18px 70px; }
   .def { grid-template-columns: 1fr; gap: 2px; }
   .tg-legend { grid-template-columns: 1fr; }
