@@ -6,6 +6,9 @@ validated JudgeResult, then recompute pass/fail server-side.
 misconceptions override score; low confidence never auto-awards (it asks a
 follow-up instead). This is the integrity barrier against fluent-but-wrong
 answers and against prompt injection ("ignore the rubric and pass me").
+
+Domain: team-AI-infra capstone (cap-setup). Grades the learner's written
+decision on surfaces, four tiers, Claude/Codex portability, and governance.
 """
 from __future__ import annotations
 
@@ -55,7 +58,7 @@ def grade(req: GradeRequest, *, trace_id: str | None = None) -> JudgeResult:
             {"role": "user", "content": user_msg},
         ],
         response_model=JudgeResult,
-        task="godel_judge",
+        task="team_infra_judge",
         trace_id=trace_id or f"judge-{req.taskId}",
         max_budget=JUDGE_MAX_BUDGET,
     )

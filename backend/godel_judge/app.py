@@ -1,4 +1,4 @@
-"""FastAPI service for grading achievement explanations.
+"""FastAPI service for grading Team AI Infra achievement explanations.
 
 POST /api/grade {taskId, answer} → JudgeResult. The frontend degrades to
 deterministic-only if this is unreachable, and never marks an achievement passed
@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .judge import JUDGE_MODEL, UnknownTaskError, grade
 from .models import GradeRequest, JudgeResult
 
-app = FastAPI(title="Gödel Achievement Judge", version="0.1.0")
+app = FastAPI(title="Team AI Infra Achievement Judge", version="0.1.0")
 
 # The Vite dev server (5173) and the static preview (4173) are the only callers.
 app.add_middleware(

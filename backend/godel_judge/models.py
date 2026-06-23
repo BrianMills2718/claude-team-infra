@@ -1,4 +1,4 @@
-"""Pydantic contracts for the Gödel achievement judge.
+"""Pydantic contracts for the Team AI Infra achievement judge.
 
 The frontend sends only (taskId, answer) — the backend is rubric-authoritative
 (reads backend/assessments.json, exported from the single source assessments.ts).
@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 class GradeRequest(BaseModel):
     """Boundary input from the frontend."""
 
-    taskId: str = Field(description="Assessment task id, e.g. 'cap-distinguish'.")
+    taskId: str = Field(description="Assessment task id, e.g. 'cap-setup'.")
     answer: str = Field(description="The learner's written explanation.")
 
 

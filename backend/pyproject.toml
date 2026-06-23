@@ -1,7 +1,7 @@
 [project]
 name = "godel-judge"
-version = "0.1.0"
-description = "LLM-graded achievement judge for the Gödel skill tree"
+version = "0.2.0"
+description = "LLM-graded achievement judge for the Team AI Infra skill tree (cap-setup capstone)"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.110",
