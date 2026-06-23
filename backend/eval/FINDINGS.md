@@ -1,33 +1,40 @@
-# Judge validation findings — cap-distinguish
+# Judge validation findings — cap-setup
 
-Frozen set: 8 cases (3 expect-pass, 5 expect-fail).
+Frozen set: 11 cases (4 expect-pass, 7 expect-fail). Capstone: lay out & justify a
+team's shared Claude Code + Codex setup, graded against `RUBRICS['rub-setup']`
+(surfaces / tiers / portability / governance / justification) with fatal-misconception
+detection.
 
-## Current result — `openrouter/openai/gpt-5-mini` (2026-06-20)
-Full 8/8 graded (OpenRouter has credits; no free-tier daily cap).
+## Current result — `openrouter/openai/gpt-5-mini` (2026-06-23)
+Full 11/11 graded (OpenRouter credits; no free-tier cap). `JUDGE_MAX_BUDGET=0.25`.
 
 | case | expect | got | score | conf | misconceptions |
 |---|---|---|---|---|---|
-| strong | pass | **pass** | 100 | high | — |
-| correct-terse | pass | **pass** | 100 | high | — |
-| minor-imprecision | pass | **pass** | 88 | medium | — |
-| true-equals-provable | fail | **fail** | 0 | high | true-prov |
-| malformed-is-false | fail | **fail** | 0 | low | wf-true, malformed-false |
-| godel-is-liar | fail | **fail** | 0 | high | liar |
-| slogan-no-application | fail | **fail** | 10 | low | — |
-| off-topic | fail | **fail** | 0 | low | — |
+| strong-complete | pass | **pass** | 91 | high | — |
+| good-concise | pass | **pass** | 90 | medium | — |
+| good-with-minor-gaps | pass | **pass** | 87 | medium | — |
+| good-with-debate-awareness | pass | **pass** | 90 | high | — |
+| advice-is-enforcement | fail | **fail** | 13 | low | advice-is-enforcement, one-drawer |
+| codex-inherits | fail | **fail** | 12 | high | codex-inherits, one-drawer |
+| secret-in-repo | fail | **fail** | 34 | high | secret-in-repo |
+| one-surface | fail | **fail** | 18 | low | one-surface, one-drawer |
+| one-drawer | fail | **fail** | 34 | medium | one-drawer |
+| slogan-no-substance | fail | **fail** | 14 | low | — |
+| prompt-injection | fail | **fail** | 0 | low | — |
 
-**false-pass = 0/5 (0%); false-fail = 0/3 (0%). GATE: PASS.**
-Every fatal-misconception answer failed with the correct misconception ids and
-remediation routed; both clear-pass and the borderline-but-decent answer passed.
-The judge is approved to gate achievements.
+**false-pass = 0/7 (0%, max 5%); false-fail = 0/4 (0%, max 15%). GATE: PASS.**
+Every fatal-misconception answer failed with the correct misconception ids; the
+prompt-injection attempt scored 0; all four good answers (including the concise and
+minor-gaps ones) passed. The judge is approved to gate the `a-setup` achievement.
 
-## Note on model choice
-An earlier run on `gemini/gemini-2.5-flash` had a daily free-tier cap (20 req) and
-was *over*-strict (false-failed the "minor-imprecision" case at 67). Switching the
-default to OpenRouter (`OPENROUTER_API_KEY`, any model, real credits) both removed
-the quota wall and improved calibration — that case now correctly passes at 88.
-Cost ≈ $0.003/grade. Override with `JUDGE_MODEL`.
+## Notes
+- Default `JUDGE_MAX_BUDGET` raised 0.08 → 0.25: longer capstone answers exceeded the
+  old per-call cap and errored. Model default `openrouter/openai/gpt-5-mini`
+  (`OPENROUTER_API_KEY`); override with `JUDGE_MODEL` / `JUDGE_MAX_BUDGET`.
+- Run: `PYTHONPATH=<backend> python eval/run.py` (a script puts its own dir on
+  sys.path, so set PYTHONPATH to the backend so the local `godel_judge` package wins
+  over the copied venv's stale editable install).
 
 ## Follow-ups
-- Expand the frozen set per achievement as the judge rolls out (Phase D), and
-  graduate this harness into shared `prompt_eval` (bootstrap CI) at scale.
+- Expand the frozen set as the judge rolls out; graduate into shared `prompt_eval`.
+- Repackage the backend under a non-`godel_judge` module name (cosmetic leftover).
