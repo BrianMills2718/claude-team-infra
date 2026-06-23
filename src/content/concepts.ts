@@ -84,9 +84,9 @@ const CONCEPTS: Concept[] = [
     example: "A shared GitHub MCP server in .mcp.json, its token referenced as an environment variable.",
     prerequisites: ["dot-claude"], contrasts: [] },
   { id: "portable-skill", term: "a portable skill", layer: "capabilities", introducedIn: "stage-3",
-    short: "A skill authored once in a portable source and used in BOTH Claude and Codex, paired with AGENTS.md.",
-    example: "The 'house-standards' skill lives in one source and is available to Claude and Codex alike.",
-    prerequisites: ["skill", "agents-md"], contrasts: ["skill"] },
+    short: "A skill written once in the open SKILL.md format (an open standard both tools support) and made discoverable in each tool's own skills directory — Claude's .claude/skills and Codex's .agents/skills.",
+    example: "The 'house-standards' SKILL.md is committed to .claude/skills and mirrored into .agents/skills, so Claude and Codex both find it.",
+    prerequisites: ["skill", "codex"], contrasts: ["skill"] },
 
   // stage-4 — distribution (how a team shares it)
   { id: "plugin", term: "a plugin", layer: "distribution", introducedIn: "stage-4",
@@ -108,8 +108,8 @@ const CONCEPTS: Concept[] = [
     example: "A teammate's personal rule can't loosen the org's managed deny rule.",
     prerequisites: ["managed-settings"], contrasts: [] },
   { id: "seats", term: "seats & plan gating", layer: "governance", introducedIn: "stage-5",
-    short: "Per-seat plans decide access: a Premium seat includes Claude Code, and some autonomous features (computer use, Dispatch) are Pro/Max-only, not on Team.",
-    example: "Your devs need Premium seats; the ops folks' Cowork computer-use isn't on the Team plan.",
+    short: "Per-seat plans decide access. Claude Code is included on EVERY Team seat (Standard and Premium) — Premium just buys more usage, it is not an access gate. A few autonomous extras (computer use, phone Dispatch) are a Pro/Max research preview and are not part of the documented Team plan.",
+    example: "All your devs get Claude Code on Standard Team seats; heavy users take Premium for more usage. Computer use / Dispatch aren't something you can assume on Team.",
     prerequisites: ["claude-code"], contrasts: [] },
 
   // stage-6 — decision (the goal)
@@ -143,7 +143,7 @@ export const PREREQ_WHY: Record<string, string> = {
   "hook>settings": "hooks are configured in settings",
   "mcp>dot-claude": "MCP servers are configured in the repo's .claude config",
   "portable-skill>skill": "a portable skill is a skill made to work across tools",
-  "portable-skill>agents-md": "portability across Codex is achieved via the AGENTS.md pairing",
+  "portable-skill>codex": "portability only matters because Codex is a second engine the skill must also reach",
   "plugin>skill": "a plugin can bundle skills",
   "plugin>sub-agent": "a plugin can bundle sub-agents",
   "plugin>hook": "a plugin can bundle hooks",
@@ -186,7 +186,7 @@ export const PREREQ_KIND: Record<string, PrereqKind> = {
   "hook>settings": "defined-via",
   "mcp>dot-claude": "defined-via",
   "portable-skill>skill": "is-a",
-  "portable-skill>agents-md": "defined-via",
+  "portable-skill>codex": "assumes",
   "plugin>skill": "part-of",
   "plugin>sub-agent": "part-of",
   "plugin>hook": "part-of",

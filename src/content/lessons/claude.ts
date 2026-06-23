@@ -194,7 +194,7 @@ export const stage3: Lesson = {
     },
     {
       heading: "But: a tool only you can reach isn't a team tool",
-      body: "A skill sitting in your personal home .claude is invisible to teammates — and to Codex. Authored in a portable source and paired with AGENTS.md, the same skill serves Claude and Codex alike. (Sharing it widely is stage 4.)",
+      body: "A skill sitting in your personal home .claude is invisible to teammates — and to Codex. Skills use an open format (SKILL.md) that both tools support, but each tool only looks in its OWN directory — Claude in .claude/skills, Codex in .agents/skills. So 'portable' means: write it once, then commit or mirror it into each tool's skills directory. (Sharing it widely is stage 4.)",
     },
   ],
   visualizations: [
@@ -217,7 +217,7 @@ export const stage3: Lesson = {
   quiz: [
     { id: "q3a", type: "multiple-choice", prompt: "You need linting to run on every edit, guaranteed. Use:", options: ["A skill", "A hook", "An MCP server", "A sub-agent"], correct: 1, explanation: "Hooks are enforced on lifecycle events." },
     { id: "q3b", type: "true-false", prompt: "A skill in your personal home .claude is automatically shared with teammates.", correct: false, explanation: "It's siloed; commit it or distribute it as a plugin." },
-    { id: "q3c", type: "multiple-choice", prompt: "What makes a skill usable in both Claude and Codex?", options: ["Renaming it", "Authoring it portably + pairing AGENTS.md", "Putting it in README", "Nothing — it just works"], correct: 1, explanation: "Portable source + AGENTS.md bridges to Codex." },
+    { id: "q3c", type: "multiple-choice", prompt: "What makes a skill usable in both Claude and Codex?", options: ["Renaming it", "The open SKILL.md format, placed in each tool's skills dir", "Putting it in README", "Nothing — it just works"], correct: 1, explanation: "Both tools read the open SKILL.md format, but each looks only in its own dir — commit/mirror it into .claude/skills and .agents/skills." },
   ],
   masteryCheckpoint: "You can choose the right capability for a need and make a skill portable across Claude and Codex.",
 };
@@ -264,6 +264,7 @@ export const stage4: Lesson = {
   confusions: [
     { misconception: "A plugin can only contain a skill.", correction: "It bundles skills, sub-agents, hooks, and MCP servers together." },
     { misconception: "Sharing means emailing a zip.", correction: "Use a marketplace repo: add once, install, and updates ship by pushing to the repo." },
+    { misconception: "Installing a plugin is low-risk, like adding a bookmark.", correction: "One install activates its skills, hooks, and MCP servers as code under a single trust decision — vet the source and pin which marketplaces are allowed; audits have found malicious skills on open third-party marketplaces." },
   ],
   quiz: [
     { id: "q4a", type: "multiple-choice", prompt: "The cleanest way to share skills+agents+MCP across many repos:", options: ["Email a zip", "Each person copies them", "Plugins in a private marketplace", "Paste into every CLAUDE.md"], correct: 2, explanation: "Plugins bundle them; a marketplace distributes and updates them." },
@@ -285,7 +286,7 @@ export const stage5: Lesson = {
   definitions: [
     { term: "managed settings", short: "Org policy that overrides local config, delivered by an admin." },
     { term: "settings precedence", short: "Managed (org) wins, then CLI, then local, then project, then user." },
-    { term: "seats & plan gating", short: "A Premium seat = Claude Code; computer-use/Dispatch are Pro/Max-only, not Team." },
+    { term: "seats & plan gating", short: "Claude Code is on every Team seat (Premium just adds usage); computer use & Dispatch are a Pro/Max preview, not documented for Team." },
   ],
   sections: [
     {
@@ -294,11 +295,11 @@ export const stage5: Lesson = {
     },
     {
       heading: "Therefore: enforce a thin floor",
-      body: "Even a light-touch team enforces two or three non-negotiables via managed settings — deny secret reads, ship a short security CLAUDE.md — and lets convention handle the rest. Precedence guarantees a personal setting can't loosen the org rule.",
+      body: "Even a light-touch team enforces two or three non-negotiables via managed settings — deny secret reads, pin which plugin marketplaces can be added (installing a plugin runs its skills, hooks and MCP servers as code), ship a short security CLAUDE.md — and lets convention handle the rest. Precedence guarantees a personal setting can't loosen the org rule.",
     },
     {
-      heading: "But: the plan gates the features",
-      body: "Seats decide access: devs need Premium seats (those include Claude Code). And the autonomous Cowork moves — computer use, phone Dispatch — are Pro/Max-only, not on Team. If someone needs them, that's an individual plan call, not a team default.",
+      heading: "But: know what the plan actually includes",
+      body: "Claude Code ships on every Team seat — both Standard and Premium; Premium just buys heavy users more usage, it is not the thing that unlocks Claude Code. The fully autonomous extras — computer use, phone Dispatch — are a Pro/Max research preview and aren't part of the documented Team plan, so don't promise them as a team default.",
     },
   ],
   visualizations: [
@@ -315,11 +316,11 @@ export const stage5: Lesson = {
   ],
   confusions: [
     { misconception: "A strongly-worded CLAUDE.md will stop risky actions.", correction: "It's advisory; enforce must-nots with managed settings, which override local config." },
-    { misconception: "All Cowork features come with a Team seat.", correction: "Computer use and Dispatch are Pro/Max-only, not on Team." },
+    { misconception: "Devs need a Premium seat to get Claude Code, and computer use comes with Team.", correction: "Claude Code is on every Team seat (Premium only adds usage); computer use and Dispatch are a Pro/Max preview, not a documented Team feature." },
   ],
   quiz: [
     { id: "q5a", type: "multiple-choice", prompt: "To guarantee nobody can read secret files, use:", options: ["A note in CLAUDE.md", "Managed settings (deny rule)", "A Slack reminder", "Hope"], correct: 1, explanation: "Managed settings are enforced and override local config." },
-    { id: "q5b", type: "true-false", prompt: "Computer use and Dispatch are included on the Team plan.", correct: false, explanation: "They're Pro/Max-only." },
+    { id: "q5b", type: "true-false", prompt: "Computer use and Dispatch are included on the Team plan.", correct: false, explanation: "They're a Pro/Max research preview — not part of the documented Team plan. (Claude Code itself, by contrast, is on every Team seat.)" },
     { id: "q5c", type: "multiple-choice", prompt: "Which wins a conflict?", options: ["A user's personal setting", "The org's managed setting", "The newest file", "Whichever is longer"], correct: 1, explanation: "Managed (org) has highest precedence." },
   ],
   masteryCheckpoint: "You can enforce the non-negotiables with managed settings and explain the Team-plan feature gap.",
