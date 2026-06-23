@@ -84,6 +84,18 @@ for (const line of lines) {
     ok(conceptIds.has(cid), `${id}: conceptId "${cid}" is not a concept`);
 }
 
+// concept-coverage report (informational, not a hard gate): which concepts have no
+// backing claim in the ledger. Surfaced so coverage gaps are never silent — a concept
+// asserting a fact with no verified claim behind it is exactly the "green but wrong" hole.
+{
+  const covered = new Set();
+  for (const line of lines) for (const cid of (JSON.parse(line).conceptIds ?? [])) covered.add(cid);
+  const all = CONCEPT_GRAPH.concepts.map((c) => c.id);
+  const uncovered = all.filter((id) => !covered.has(id));
+  console.log(`  coverage: ${all.length - uncovered.length}/${all.length} concepts have ≥1 backing claim` +
+    (uncovered.length ? ` — uncovered: ${uncovered.join(", ")}` : " (full)"));
+}
+
 if (errors.length) {
   console.error(`✗ claim ledger: ${errors.length} problem(s) across ${n} claims`);
   for (const e of errors) console.error("  - " + e);
