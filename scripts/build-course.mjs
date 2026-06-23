@@ -125,4 +125,7 @@ let vc = readFileSync(join(target, "scripts", "validate-content.mjs"), "utf8");
 vc = vc.replace(/for \(let s = 0; s <= \d+; s\+\+\) ok\(stages\.includes\(s\)/, "for (let s = 0; s <= Math.max(...stages); s++) ok(stages.includes(s)");
 writeFileSync(join(target, "scripts", "validate-content.mjs"), vc);
 
+// 9. derive debates + glossary (sync derived files so npm run check passes)
+execFileSync("node", [join(target, "scripts/derive-debates.mjs")], { stdio: "inherit", cwd: target });
+
 console.log(`\n✓ assembled instance in ${target}: ${spec.concepts.length} concepts, ${spec.stages.length} stages, goal a-goal`);
