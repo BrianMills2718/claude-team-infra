@@ -62,14 +62,20 @@ const GAPS = {
 };
 
 // ---- frame ----
-const domain = args?.domain ?? "the target domain";
-const goalConcepts = args?.goalConcepts ?? [];
-const audience = args?.audience ?? "practitioners making a decision";
-const asOf = args?.asOf ?? "today";
-const existing = args?.existingConcepts ?? [];
-const K = args?.K ?? 2;
-const maxRounds = Math.min(args?.maxRounds ?? 3, 4);
+// Robust to args arriving as an object OR a JSON string (defensive: a stringified
+// args would make args?.domain undefined and silently run greenfield).
+const IN = typeof args === "string" ? JSON.parse(args) : (args ?? {});
+const domain = IN.domain ?? "the target domain";
+const goalConcepts = IN.goalConcepts ?? [];
+const audience = IN.audience ?? "practitioners making a decision";
+const asOf = IN.asOf ?? "today";
+const existing = IN.existingConcepts ?? [];
+const K = IN.K ?? 2;
+const maxRounds = Math.min(IN.maxRounds ?? 3, 4);
 const A = { agentType: "general-purpose" }; // research agents need web tools
+log(`frame: domain="${domain.slice(0, 70)}" · ${existing.length} existing concepts · goals=[${goalConcepts.join(",")}] · K=${K} maxRounds=${maxRounds}`);
+if (existing.length === 0 && domain === "the target domain")
+  log("WARNING: no domain/concepts received — args did not propagate; aborting would be better than researching a default.");
 
 const MODALITIES = [
   { type: "authoritative", how: "official docs, specs, changelogs, primary vendor sources — for facts and perishable specs. Quote exact behavior/versions." },
