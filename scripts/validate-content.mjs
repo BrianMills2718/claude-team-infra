@@ -127,7 +127,7 @@ for (const l of LESSONS) {
 // Stage coverage + unique ids
 const stages = LESSONS.map((l) => l.stage);
 // S6: stage range derived would be better; was hardcoded to Gödel's 17 stages.
-for (let s = 0; s <= 6; s++) ok(stages.includes(s), `missing stage ${s}`);
+for (let s = 0; s <= Math.max(...stages); s++) ok(stages.includes(s), `missing stage ${s}`);
 const ids = new Set();
 for (const l of LESSONS) {
   ok(!ids.has(l.id), `duplicate lesson id ${l.id}`);

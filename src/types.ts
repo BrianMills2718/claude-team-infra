@@ -12,7 +12,7 @@
 /** The five conceptual layers. Every typed-graph node/edge declares its layer
  *  so the renderer can visually keep them apart (style + legend, not color
  *  alone). This is the central anti-"category-error" mechanism. */
-export type Layer = "orientation" | "surfaces" | "config" | "capabilities" | "distribution" | "governance" | "decision";
+export type Layer = "setup-onboarding" | "config-memory" | "permissions-security-gov" | "skills-hooks-commands" | "subagents-agent-teams" | "mcp" | "plugins-distribution" | "automation-ci-integratio" | "optimal-use-context-cost" | "surfaces-mobility" | "monitoring-analytics-tro" | "enterprise-providers-gat";
 
 /** Node kinds in the typed graph. A superset across all stages; a given graph
  *  uses only the kinds it needs. */
@@ -209,7 +209,8 @@ export type QuizQuestion =
   | TrueFalseQ
   | ClassificationQ
   | FillInQ
-  | MatchingQ;
+  | MatchingQ
+  | OpenEndedQ;
 
 interface QuizBase {
   id: string;
@@ -274,6 +275,23 @@ export interface MatchingQ extends QuizBase {
   pairs: Record<string, string>;
 }
 
+/**
+ * Open-ended question graded by the LLM judge backend. The learner writes a
+ * free-text response; the backend grades it against the rubric and returns a
+ * verdict + feedback. Falls back to self-grading if the backend is unavailable.
+ */
+export interface OpenEndedQ extends QuizBase {
+  type: "open-ended";
+  /** What a correct answer must demonstrate — shown to the learner as a hint. */
+  rubric: string;
+  /** Target concepts the answer must address. */
+  targetConcepts?: string[];
+  /** 3-5 bullet points a passing answer will cover (shown AFTER submitting, not before). */
+  passingCriteria: string[];
+  /** Placeholder text for the textarea. */
+  placeholder?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Lesson
 // ---------------------------------------------------------------------------
@@ -299,6 +317,39 @@ export interface Confusion {
   correction: string;
 }
 
+/**
+ * A diagnostic pre-quiz question. Shown BEFORE the lesson content; correct
+ * answers collapse the sections they cover (the learner already knows that
+ * material and can skip). Easier than main quiz questions — checks basic
+ * familiarity, not mastery.
+ */
+export interface PreQuizQuestion {
+  prompt: string;
+  options: string[];
+  /** Index of the single correct option. */
+  correct: number;
+  /** Indices of lesson.sections this question covers. Correct → those sections
+   *  start collapsed. */
+  sectionIndices: number[];
+  /** Short explanation shown after answering. */
+  explanation: string;
+}
+
+/**
+ * A hands-on task checkpoint. Rendered inline after lesson.sections[afterSectionIdx].
+ * Non-blocking (soft advisory): learner can mark done or skip.
+ */
+export interface HandsOnTask {
+  id: string;
+  /** Insert after this section index (0 = after first section). */
+  afterSectionIdx: number;
+  title: string;
+  /** Markdown: step-by-step instructions for what to go do in Claude Code. */
+  instructions: string;
+  /** What the learner should have when they are done. */
+  doneWhen: string;
+}
+
 export interface Lesson {
   id: string;
   stage: number;
@@ -309,6 +360,16 @@ export interface Lesson {
   objectives: string[];
   definitions: Definition[];
   sections: Section[];
+  /**
+   * Diagnostic pre-quiz shown before lesson content. Correct answers collapse
+   * matching sections by default so learners can skip what they know.
+   */
+  preQuiz?: PreQuizQuestion[];
+  /**
+   * Hands-on task checkpoints interleaved with sections (non-blocking).
+   * Ordered by afterSectionIdx ascending.
+   */
+  tasks?: HandsOnTask[];
   visualizations: VisualizationSpec[];
   confusions: Confusion[];
   quiz: QuizQuestion[];
@@ -391,14 +452,7 @@ export type EdgeKind =
   | "encodes_as"
   | "contrasts_with";
 
-export type Branch =
-  | "orientation"
-  | "surfaces"
-  | "config"
-  | "capabilities"
-  | "distribution"
-  | "governance"
-  | "decision";
+export type Branch = "setup-onboarding" | "config-memory" | "permissions-security-gov" | "skills-hooks-commands" | "subagents-agent-teams" | "mcp" | "plugins-distribution" | "automation-ci-integratio" | "optimal-use-context-cost" | "surfaces-mobility" | "monitoring-analytics-tro" | "enterprise-providers-gat";
 
 export interface SkillNode {
   id: string;

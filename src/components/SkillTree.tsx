@@ -46,7 +46,7 @@ export function SkillTree() {
   const scope = useMemo(() => {
     const s = new Set<string>([goalId, ...ancestorsOf(goalId)]);
     // The orientation map is a global overview — always in scope (never dimmed).
-    for (const n of SKILL_GRAPH.nodes) if (n.branch === "orientation") s.add(n.id);
+    for (const n of SKILL_GRAPH.nodes) if (n.branch === "setup-onboarding") s.add(n.id);
     return s;
   }, [goalId]);
 

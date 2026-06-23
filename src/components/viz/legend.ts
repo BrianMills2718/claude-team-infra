@@ -12,41 +12,18 @@ export const LAYER_META: Record<
   Layer,
   { label: string; color: string; blurb: string }
 > = {
-  orientation: {
-    label: "Orientation",
-    color: "#64748b",
-    blurb: "One tool, many front-ends — the lay of the land.",
-  },
-  surfaces: {
-    label: "Surfaces",
-    color: "#2563eb",
-    blurb: "Where you work: CLI, Desktop, Cowork, Codex.",
-  },
-  config: {
-    label: "Config",
-    color: "#7c3aed",
-    blurb: "The shared setup that lives in the repo.",
-  },
-  capabilities: {
-    label: "Capabilities",
-    color: "#059669",
-    blurb: "Skills, sub-agents, hooks, MCP.",
-  },
-  distribution: {
-    label: "Distribution",
-    color: "#d97706",
-    blurb: "Bundling and sharing the library.",
-  },
-  governance: {
-    label: "Governance",
-    color: "#dc2626",
-    blurb: "Enforced policy, precedence, and seats.",
-  },
-  decision: {
-    label: "Decision",
-    color: "#0891b2",
-    blurb: "Placing each shared thing in the right tier.",
-  },
+  "setup-onboarding": { label: "Setup & onboarding", color: "#2563eb", blurb: "Setup & onboarding" },
+  "config-memory": { label: "Config & memory (CLAUDE.md, settings)", color: "#7c3aed", blurb: "Config & memory (CLAUDE.md, settings)" },
+  "permissions-security-gov": { label: "Permissions, security & governance", color: "#dc2626", blurb: "Permissions, security & governance" },
+  "skills-hooks-commands": { label: "Skills, hooks & commands", color: "#059669", blurb: "Skills, hooks & commands" },
+  "subagents-agent-teams": { label: "Subagents & agent teams", color: "#d97706", blurb: "Subagents & agent teams" },
+  "mcp": { label: "MCP (connecting tools)", color: "#0891b2", blurb: "MCP (connecting tools)" },
+  "plugins-distribution": { label: "Plugins & distribution", color: "#db2777", blurb: "Plugins & distribution" },
+  "automation-ci-integratio": { label: "Automation, CI & integrations", color: "#65a30d", blurb: "Automation, CI & integrations" },
+  "optimal-use-context-cost": { label: "Optimal use, context & cost", color: "#9333ea", blurb: "Optimal use, context & cost" },
+  "surfaces-mobility": { label: "Surfaces & mobility", color: "#0d9488", blurb: "Surfaces & mobility" },
+  "monitoring-analytics-tro": { label: "Monitoring, analytics & troubleshooting", color: "#e11d48", blurb: "Monitoring, analytics & troubleshooting" },
+  "enterprise-providers-gat": { label: "Enterprise providers & gateways", color: "#4f46e5", blurb: "Enterprise providers & gateways" },
 };
 
 /** Edge dash patterns give a non-color cue per relation family; `verbose` is the

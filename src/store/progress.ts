@@ -18,6 +18,15 @@ export interface LessonProgress {
   mastered: boolean;
   /** True once the lesson page has been opened (for the sidebar dot). */
   visited: boolean;
+  /**
+   * Pre-quiz results: indices of pre-quiz questions answered correctly.
+   * Determines which sections start collapsed (the learner already knows them).
+   */
+  preQuizCorrect?: number[];
+  /**
+   * Hands-on task states keyed by task id: "done" | "skipped" | undefined.
+   */
+  taskStates?: Record<string, "done" | "skipped">;
 }
 
 type ProgressMap = Record<string, LessonProgress>;
@@ -79,6 +88,23 @@ export function recordQuiz(lessonId: string, score: number, mastered: boolean) {
       quizScore: Math.max(cur.quizScore, score),
       mastered: cur.mastered || mastered,
     },
+  };
+  emit();
+}
+
+export function recordPreQuiz(lessonId: string, correctIndices: number[]) {
+  const cur = getProgress(lessonId);
+  const prev = cur.preQuizCorrect ?? [];
+  const merged = Array.from(new Set([...prev, ...correctIndices]));
+  state = { ...state, [lessonId]: { ...cur, preQuizCorrect: merged } };
+  emit();
+}
+
+export function recordTask(lessonId: string, taskId: string, status: "done" | "skipped") {
+  const cur = getProgress(lessonId);
+  state = {
+    ...state,
+    [lessonId]: { ...cur, taskStates: { ...(cur.taskStates ?? {}), [taskId]: status } },
   };
   emit();
 }

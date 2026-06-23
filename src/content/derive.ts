@@ -27,7 +27,7 @@ export function conceptDepEdges(): Array<[string, string]> {
 // is off the critical path to the goals (not a defect; see EDGE_REVIEW / §9).
 
 /** The topic's declared terminal goals (the headline capabilities). */
-export const GOAL_CONCEPTS = ["shared-library"];
+export const GOAL_CONCEPTS = ["gateway-forwarding-contr","llm-gateway","managed-mcp-governance","compaction-survival","siem-audit-logging"];
 
 /** All concepts on the backward prerequisite closure of `goals` (incl. goals). */
 export function goalClosure(goals: string[] = GOAL_CONCEPTS): Set<string> {
