@@ -100,12 +100,15 @@ export function recordPreQuiz(lessonId: string, correctIndices: number[]) {
   emit();
 }
 
-export function recordTask(lessonId: string, taskId: string, status: "done" | "skipped") {
+export function recordTask(lessonId: string, taskId: string, status: "done" | "skipped" | null) {
   const cur = getProgress(lessonId);
-  state = {
-    ...state,
-    [lessonId]: { ...cur, taskStates: { ...(cur.taskStates ?? {}), [taskId]: status } },
-  };
+  const taskStates = { ...(cur.taskStates ?? {}) };
+  if (status === null) {
+    delete taskStates[taskId];
+  } else {
+    taskStates[taskId] = status;
+  }
+  state = { ...state, [lessonId]: { ...cur, taskStates } };
   emit();
 }
 

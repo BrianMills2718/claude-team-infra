@@ -52,8 +52,14 @@ if (existsSync(srcTypes)) copyFileSync(srcTypes, join(target, "src", "types.ts")
 const branches = [...new Set(spec.stages.map((s) => s.branch))];
 const union = branches.map(q).join(" | ");
 let types = readFileSync(join(target, "src", "types.ts"), "utf8");
-types = types.replace(/export type Layer =[^;]*;/, `export type Layer = ${union};`);
-types = types.replace(/export type Branch =\s*[^;]*;/, `export type Branch = ${union};`);
+// Use the 's' (dotAll) flag so the pattern crosses newlines in multi-line unions.
+// Also assert the replace actually changed something to catch future type renames.
+const beforeLayer = types;
+types = types.replace(/export type Layer =[\s\S]*?;(?=\s*\n)/, `export type Layer = ${union};`);
+if (types === beforeLayer) console.warn("⚠ Layer union patch did not match — check types.ts");
+const beforeBranch = types;
+types = types.replace(/export type Branch =[\s\S]*?;(?=\s*\n)/, `export type Branch = ${union};`);
+if (types === beforeBranch) console.warn("⚠ Branch union patch did not match — check types.ts");
 writeFileSync(join(target, "src", "types.ts"), types);
 
 // 3. lessons — authored if provided, else valid stubs (one per stage)

@@ -27,14 +27,15 @@ export function LessonPage({ lesson }: { lesson: Lesson }) {
   const prev = LESSONS[idx - 1];
   const next = LESSONS[idx + 1];
 
-  // Pre-quiz derived collapse set. expandAll overrides all collapses when true.
+  // Pre-quiz derived collapse set. expandedSet tracks which collapsed sections
+  // the user has manually re-opened; cleared by "Collapse known".
   const collapsed = collapsedByPreQuiz(lesson, progress.preQuizCorrect ?? []);
-  const [expandAll, setExpandAll] = useState(false);
+  const [expandedSet, setExpandedSet] = useState<Set<number>>(new Set());
 
   return (
     <article className="lesson">
       <header className="lesson-head">
-        <div className="lesson-stage-badge">Stage {lesson.stage}</div>
+        <div className="lesson-stage-badge">Stage {lesson.stage} of {LESSONS.length - 1}</div>
         <h2 className="lesson-title">{lesson.title}</h2>
         <p className="lesson-summary">
           <RichLine text={lesson.summary} />
@@ -89,23 +90,31 @@ export function LessonPage({ lesson }: { lesson: Lesson }) {
       </section>
 
       {/* Section expand/collapse controls — only shown when pre-quiz collapsed some */}
-      {collapsed.size > 0 && (
-        <div className="section-controls">
-          {!expandAll && (
-            <button className="section-ctrl-btn" onClick={() => setExpandAll(true)}>
-              Expand all
-            </button>
-          )}
-          {expandAll && (
-            <button className="section-ctrl-btn" onClick={() => setExpandAll(false)}>
-              Collapse known
-            </button>
-          )}
-        </div>
-      )}
+      {collapsed.size > 0 && (() => {
+        const anyStillCollapsed = [...collapsed].some((i) => !expandedSet.has(i));
+        return (
+          <div className="section-controls">
+            {anyStillCollapsed ? (
+              <button
+                className="section-ctrl-btn"
+                onClick={() => setExpandedSet(new Set([...collapsed]))}
+              >
+                Expand all
+              </button>
+            ) : (
+              <button
+                className="section-ctrl-btn"
+                onClick={() => setExpandedSet(new Set())}
+              >
+                Collapse known
+              </button>
+            )}
+          </div>
+        );
+      })()}
 
       {lesson.sections.map((s, i) => {
-        const isCollapsed = !expandAll && collapsed.has(i);
+        const isCollapsed = collapsed.has(i) && !expandedSet.has(i);
         const tasksAfter = lesson.tasks?.filter((t) => t.afterSectionIdx === i) ?? [];
         return (
           <div key={i}>
@@ -124,10 +133,14 @@ export function LessonPage({ lesson }: { lesson: Lesson }) {
                   <button
                     className="section-toggle"
                     aria-label={isCollapsed ? "Expand section" : "Collapse section"}
-                    onClick={() => {
-                      if (isCollapsed) setExpandAll(true);
-                      else setExpandAll(false);
-                    }}
+                    onClick={() =>
+                      setExpandedSet((prev) => {
+                        const next = new Set(prev);
+                        if (isCollapsed) next.add(i);
+                        else next.delete(i);
+                        return next;
+                      })
+                    }
                   >
                     {isCollapsed ? "▶" : "▼"}
                   </button>
@@ -189,7 +202,7 @@ export function LessonPage({ lesson }: { lesson: Lesson }) {
 
       <section className="lesson-block">
         <h3>Check yourself</h3>
-        <Quiz lessonId={lesson.id} questions={lesson.quiz} />
+        <Quiz key={lesson.id} lessonId={lesson.id} questions={lesson.quiz} />
       </section>
 
       <section className={`mastery ${progress.mastered ? "is-mastered" : ""}`}>

@@ -114,7 +114,13 @@ log(`authoring pre-quizzes + tasks for ${stages.length} stages`);
 const preResults = await pipeline(
   stages,
   (s) => {
-    const sectionCount = s.content ? (s.content.match(/^##/gm) || []).length || 6 : 6;
+    // Count section headings robustly: match ## or ### at line start (with optional space),
+    // or JSON "heading": patterns if content is serialized JSON. Fallback 8 is safer than 6.
+    const sectionCount = s.content
+      ? (s.content.match(/\n##[ \t]/g) || []).length ||
+        (s.content.match(/"heading"\s*:/g) || []).length ||
+        8
+      : 8;
     return agent(
       `You are authoring the DIAGNOSTIC PRE-QUIZ and HANDS-ON TASKS for one stage of a course on setting up Claude Code + Codex for a team.\n\n` +
       `STAGE: ${s.title} (${s.id})\nKEY CONCEPTS: ${s.concepts.join(", ")}\n\nVERIFIED CLAIMS:\n` +

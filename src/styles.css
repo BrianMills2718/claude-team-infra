@@ -263,6 +263,7 @@ kbd {
 .quiz-q:first-of-type { border-top: none; padding-top: 0; }
 .quiz-q-prompt { display: flex; gap: 10px; font-size: 16px; margin-bottom: 12px; font-weight: 600; }
 .quiz-q-num { background: var(--accent); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; flex: none; }
+.quiz-multi-hint { font-size: 13px; color: var(--ink-soft); font-style: italic; margin: 0 0 8px; }
 .quiz-options { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .quiz-opt {
   display: block; width: 100%; text-align: left; padding: 10px 14px;
@@ -428,6 +429,7 @@ kbd {
   white-space: normal; text-align: left; cursor: auto;
 }
 .def-card-name { font-weight: 700; font-style: italic; }
+.def-card-meaning { font-size: 14px; line-height: 1.5; }
 .def-card-example { color: var(--ink-soft); }
 .def-missing { color: #fff; background: var(--metatheory); padding: 0 5px; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 12px; }
 
