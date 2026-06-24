@@ -308,6 +308,8 @@ export interface Definition {
 export interface Section {
   heading?: string;
   body: string;
+  /** Official doc URLs that back up specific claims in this section. */
+  sources?: string[];
 }
 
 export interface Confusion {
