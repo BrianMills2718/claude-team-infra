@@ -85,42 +85,61 @@ function PQQuestion({
 
 export function PreQuizGate({ lesson }: { lesson: Lesson }) {
   if (!lesson.preQuiz || lesson.preQuiz.length === 0) return null;
-  // Captured after the guard so TypeScript knows it's defined throughout.
   const questions: PreQuizQuestion[] = lesson.preQuiz;
 
   const progress = useProgress(lesson.id);
+  const persistedCorrect = progress.preQuizCorrect ?? [];
+  // preQuizCorrect is set to [] (even for 0 correct) on completion; undefined = not yet taken.
+  const hasCompletedBefore = progress.preQuizCorrect !== undefined;
+
+  // retaking resets to blank quiz regardless of prior completion
+  const [retaking, setRetaking] = useState(false);
+
   // answers: question index → chosen option index (null = unanswered)
   const [answers, setAnswers] = useState<Record<number, number | null>>(() =>
     Object.fromEntries(questions.map((_, i) => [i, null]))
   );
-  // Track which question indices were answered correctly in this session.
   const [localCorrect, setLocalCorrect] = useState<Set<number>>(new Set());
   const [skipped, setSkipped] = useState(false);
   const [recorded, setRecorded] = useState(false);
 
-  const allAnswered = questions.every((_, i) => answers[i] !== null);
+  // If already completed and not retaking, show the summary directly.
+  if (hasCompletedBefore && !retaking) {
+    const coveredCount = (() => {
+      const s = new Set<number>();
+      questions.forEach((q, qi) => {
+        if (persistedCorrect.includes(qi)) q.sectionIndices.forEach((si) => s.add(si));
+      });
+      return s.size;
+    })();
+    return (
+      <div className="pre-quiz pre-quiz-done">
+        <div className="pq-header">
+          <span className="pq-label">Pre-quiz complete</span>
+          <button className="pq-skip" onClick={() => setRetaking(true)}>
+            Retake
+          </button>
+        </div>
+        <div className="pq-summary">
+          You got {persistedCorrect.length}/{questions.length} correct —{" "}
+          {coveredCount}/{lesson.sections.length} sections collapsed below.
+        </div>
+      </div>
+    );
+  }
 
-  // Derive the set of section indices collapsed by correct answers (for the
-  // summary banner — uses session-local data before persistence catches up).
+  const allAnswered = questions.every((_, i) => answers[i] !== null);
   const correctIndices = Array.from(localCorrect);
-  const coveredSections = new Set<number>();
-  questions.forEach((q, qi) => {
-    if (correctIndices.includes(qi)) {
-      q.sectionIndices.forEach((si) => coveredSections.add(si));
-    }
-  });
 
   function handleAnswer(qi: number, chosen: number) {
     const isCorrect = chosen === questions[qi].correct;
-    setAnswers((prev) => ({ ...prev, [qi]: chosen }));
-
+    const nextAnswers = { ...answers, [qi]: chosen };
     const nextLocalCorrect = new Set(localCorrect);
     if (isCorrect) nextLocalCorrect.add(qi);
 
+    setAnswers(nextAnswers);
     setLocalCorrect(nextLocalCorrect);
 
-    // Check if this was the last answer.
-    const nextAnswers = { ...answers, [qi]: chosen };
     const nowAllAnswered = questions.every((_, i) => nextAnswers[i] !== null);
     if (nowAllAnswered && !recorded) {
       recordPreQuiz(lesson.id, Array.from(nextLocalCorrect));
@@ -128,9 +147,6 @@ export function PreQuizGate({ lesson }: { lesson: Lesson }) {
     }
   }
 
-  // Merge session-local correct with any previously persisted correct answers
-  // so that summary counts are accurate on re-visit.
-  const persistedCorrect = progress.preQuizCorrect ?? [];
   const effectiveCorrect = Array.from(new Set([...persistedCorrect, ...correctIndices]));
   const effectiveCoveredCount = (() => {
     const s = new Set<number>();

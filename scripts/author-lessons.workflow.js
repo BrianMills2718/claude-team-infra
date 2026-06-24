@@ -76,7 +76,7 @@ const results = await pipeline(
     `5. Keep it accurate to the verified claims (do not contradict them).\n\n` +
     `STAGE: ${s.title} (${s.id})\n\nVERIFIED CLAIMS:\n` +
     s.claims.map((c) => `- ${c.statement}` + (c.sources ? ` [${c.sources.join(", ")}]` : "")).join("\n") +
-    `\n\nDRAFT SECTIONS (JSON):\n${JSON.stringify(authored?.sections ?? []).slice(0, 40000)}\n\n` +
+    `\n\nDRAFT SECTIONS (JSON):\n${JSON.stringify(authored?.sections ?? [])}\n\n` +
     `Return the corrected, deepened sections (same shape).`,
     { ...A, schema: SECTIONS, label: `verify:${s.id}`, phase: "Verify" },
   ),
