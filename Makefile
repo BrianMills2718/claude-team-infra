@@ -2,7 +2,7 @@
 
 TARGET ?= /tmp/gen-instance
 SPEC ?= /tmp/course-spec.json
-LESSONS ?= /tmp/authored-lessons-grounded.json
+LESSONS ?= /tmp/authored-lessons-with-sources.json
 LESSONS_RAW ?= /tmp/authored-lessons-workflow.json
 QUIZZES_RAW ?= /tmp/authored-quizzes-12.json
 QUIZZES ?= /tmp/authored-quizzes-12-normalized.json
