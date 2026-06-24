@@ -469,8 +469,8 @@ export const LESSONS: Lesson[] = [
      "File-based managed settings at `/etc/claude-code/managed-settings.json` or the OS equivalent — available for any provider.",
      "Both B and C are correct; server-managed settings require Enterprise."
     ],
-    "correct": 3,
-    "explanation": "The content states server-managed delivery is 'Teams/Enterprise only' (so Teams does have it — distractor 4 says 'require Enterprise' which is partially wrong). Wait — re-reading: 'Server-managed delivery requires Teams/Enterprise — Bedrock/Vertex/Foundry/Console-only deployments must use file/OS (plist/registry) mechanisms.' So Teams DOES have server-managed. That makes option A correct too. But option D says 'server-managed requires Enterprise' which contradicts the content. So option A is correct (Teams has server-managed), and the table shows Teams gets 'Server-managed settings delivery ✓'. The plist/registry and file-based options are also available (any provider). So A, B, and C are all valid mechanisms for Teams. But the question asks which is available — all three are. The most precise answer that captures what's special about Teams is A (server-managed IS available to Teams), while D incorrectly states Enterprise-only. Given the options, A is the best single answer and D is a trap that misreads the content."
+    "correct": 0,
+    "explanation": "Teams DOES have server-managed settings delivery (requires Claude Code v2.1.38+). So option A is correct — the claude.ai admin console is available to Teams admins. Options B (macOS plist / Windows registry) and C (file-based managed-settings.json) also work for Teams but are shared with non-subscription providers. D is a trap: it incorrectly claims server-managed requires Enterprise. The verified claim is 'Teams requires v2.1.38+, Enterprise requires v2.1.30+' — both tiers support it."
    },
    {
     "id": "stage-0-q13",
@@ -1742,7 +1742,7 @@ export const LESSONS: Lesson[] = [
     ],
     "correct": 1,
     "sectionIndices": [
-     12
+     10
     ],
     "explanation": "Matchers are case-sensitive. The tool name is `Bash` with a capital B; the matcher `bash` silently never fires. This is explicitly called out as a pitfall in the content."
    },
@@ -1756,7 +1756,7 @@ export const LESSONS: Lesson[] = [
     ],
     "correct": 1,
     "sectionIndices": [
-     14
+     10
     ],
     "explanation": "Only exit code `2` blocks. Any other non-zero exit code (including `1`) is non-blocking — execution continues. Only exit code `2` causes stderr to be fed back to Claude as feedback."
    },
@@ -1784,7 +1784,7 @@ export const LESSONS: Lesson[] = [
     ],
     "correct": 1,
     "sectionIndices": [
-     13
+     10
     ],
     "explanation": "The `if` filter is only valid for tool-name events (`PreToolUse`, `PostToolUse`, etc.). Adding it to a non-tool event like `UserPromptSubmit` prevents the hook from running at all."
    },
@@ -1854,7 +1854,7 @@ export const LESSONS: Lesson[] = [
     ],
     "correct": 1,
     "sectionIndices": [
-     12
+     10
     ],
     "explanation": "Matcher syntax: if the value contains any character other than letters, digits, `_`, or `|`, it is treated as a JS regex. `mcp__.*__write.*` uses `.` (a non-`_`/non-digit char), making it a regex that matches any MCP server's write tools."
    },
@@ -1882,7 +1882,7 @@ export const LESSONS: Lesson[] = [
     ],
     "correct": 1,
     "sectionIndices": [
-     14
+     10
     ],
     "explanation": "On exit code `0`, plain (non-JSON) stdout is added as context ONLY for `SessionStart`, `UserPromptSubmit`, and `UserPromptExpansion`. For all other events including `PostToolUse`, non-JSON stdout is ignored."
    }
@@ -1897,7 +1897,7 @@ export const LESSONS: Lesson[] = [
    },
    {
     "id": "stage3-task-write-blocking-hook",
-    "afterSectionIdx": 14,
+    "afterSectionIdx": 10,
     "title": "Write a blocking PreToolUse hook with correct exit code",
     "instructions": "Add a `PreToolUse` hook that blocks any `Bash` call containing `rm -rf` and returns feedback to Claude.\n\n1. Open (or create) `.claude/settings.json` in your project root and add the following hook:\n```json\n{\n  \"hooks\": {\n    \"PreToolUse\": [\n      {\n        \"matcher\": \"Bash\",\n        \"hooks\": [\n          {\n            \"type\": \"command\",\n            \"command\": \"python3 -c \\\"import sys, json; data=json.load(sys.stdin); cmd=data.get('tool_input',{}).get('command',''); sys.stderr.write('Blocked: rm -rf is not allowed\\\\n') or sys.exit(2) if 'rm -rf' in cmd else sys.exit(0)\\\"\"\n          }\n        ]\n      }\n    ]\n  }\n}\n```\n\n2. In Claude Code, run:\n```\n/hooks\n```\nConfirm the new `PreToolUse` hook appears with source `Project`.\n\n3. Ask Claude to run a safe test:\n> Please run: `echo hello`\nIt should succeed (exit 0).\n\n4. Ask Claude:\n> Please run: `rm -rf /tmp/test-nonexistent`\nThe hook should block it and Claude should see the stderr message `Blocked: rm -rf is not allowed`.",
     "doneWhen": "Claude reports that the `rm -rf` Bash call was blocked with the feedback message from stderr, while `echo hello` ran without issue."
@@ -3007,7 +3007,7 @@ export const LESSONS: Lesson[] = [
     ],
     "correct": 1,
     "sectionIndices": [
-     10
+     9
     ],
     "explanation": "claude.ai connectors silently do not load when `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `apiKeyHelper`, Bedrock, or Vertex is active as the auth source — even after `/login`. They only appear when the active auth is the Claude.ai subscription. Run `/status` to check."
    },
@@ -4642,7 +4642,7 @@ export const LESSONS: Lesson[] = [
     ],
     "correct": 2,
     "sectionIndices": [
-     14
+     11
     ],
     "explanation": "After compaction, project-root CLAUDE.md, unscoped rules, and auto memory are re-injected from disk. What's lost until a matching file is read: paths:-frontmatter rules and nested subdirectory CLAUDE.md. Invoked skill bodies survive but are capped at 5,000 tokens/skill, truncated keeping the start."
    },
@@ -4671,7 +4671,7 @@ export const LESSONS: Lesson[] = [
     ],
     "correct": 3,
     "sectionIndices": [
-     12
+     11
     ],
     "explanation": "Subagents run in their own context window with their own shorter system prompt and their own CLAUDE.md copy. They do NOT inherit conversation history or auto memory. Context accumulated in the parent session must be passed explicitly in the subagent prompt."
    },
@@ -4702,7 +4702,7 @@ export const LESSONS: Lesson[] = [
     "correct": 1,
     "sectionIndices": [
      3,
-     14
+     11
     ],
     "explanation": "After compaction, only skills that were actually invoked have their bodies re-injected — and only from the start of the file, capped at 5,000 tokens/skill. Skill descriptions are NOT re-injected. Critical always-needed rules belong in CLAUDE.md (re-injected from disk), not only in skills."
    },
@@ -4780,7 +4780,7 @@ export const LESSONS: Lesson[] = [
    },
    {
     "id": "stage-8-task-context-check",
-    "afterSectionIdx": 13,
+    "afterSectionIdx": 11,
     "title": "Inspect your session context and disconnect unused MCP servers",
     "instructions": "1. Start a Claude Code session in a project you actively use:\n```bash\nclaude\n```\n2. Run the context breakdown command:\n```\n/context\n```\nRead the output: note which categories (CLAUDE.md, skills, MCP, conversation) are consuming the most tokens.\n3. Run the MCP status command to see per-server token cost:\n```\n/mcp\n```\nIdentify any servers listed that you have not used in this session (or rarely use).\n4. For each unused server, disconnect it:\n```\n/mcp disconnect <server-name>\n```\n5. Run `/context` again and note the reduction in MCP-attributed token usage.\n6. For servers you routinely don't need in a particular project, add them to the project's `.claude/settings.json` under `mcpServers` with `\"disabled\": true`, or remove them from the project-level MCP config altogether.",
     "doneWhen": "You have run `/context` and `/mcp`, identified at least one unused MCP server, disconnected it, and confirmed the context report shows reduced MCP token cost after disconnection."
