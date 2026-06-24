@@ -25,11 +25,30 @@ const C = join(target, "src", "content");
 const here = process.cwd();
 const q = (s) => JSON.stringify(String(s ?? ""));
 
+// 0. sync engine source files to target so the target always has the latest
+// components, styles, and store. Only copies files that exist in the engine.
+const ENGINE_SYNC = [
+  ["src/components/LessonPage.tsx", "src/components/LessonPage.tsx"],
+  ["src/components/PreQuiz.tsx",    "src/components/PreQuiz.tsx"],
+  ["src/components/TaskCard.tsx",   "src/components/TaskCard.tsx"],
+  ["src/components/Quiz.tsx",       "src/components/Quiz.tsx"],
+  ["src/store/progress.ts",         "src/store/progress.ts"],
+  ["src/styles.css",                "src/styles.css"],
+];
+import { copyFileSync } from "node:fs";
+for (const [rel, dest] of ENGINE_SYNC) {
+  const src = join(here, rel);
+  if (existsSync(src)) copyFileSync(src, join(target, dest));
+}
+
 // 1. concepts.ts + graph.ts (reuse the deterministic emitters)
 execFileSync("node", [join(here, "scripts/emit-concepts.mjs"), specPath, join(C, "concepts.ts")], { stdio: "inherit" });
 execFileSync("node", [join(here, "scripts/emit-graph.mjs"), specPath, join(C, "graph.ts")], { stdio: "inherit" });
 
-// 2. types.ts — regenerate the Layer & Branch unions from the stage branches
+// 2. types.ts — copy from engine source then patch Layer & Branch unions so the
+// target always gets the engine's latest type definitions (e.g. Section.sources).
+const srcTypes = join(here, "src", "types.ts");
+if (existsSync(srcTypes)) copyFileSync(srcTypes, join(target, "src", "types.ts"));
 const branches = [...new Set(spec.stages.map((s) => s.branch))];
 const union = branches.map(q).join(" | ");
 let types = readFileSync(join(target, "src", "types.ts"), "utf8");
