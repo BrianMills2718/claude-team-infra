@@ -71,7 +71,10 @@ function PQQuestion({
         })}
       </ul>
       {done && (
-        <div className={`pq-result ${answered === q.correct ? "pq-result-correct" : "pq-result-wrong"}`}>
+        <div
+          className={`pq-result ${answered === q.correct ? "pq-result-correct" : "pq-result-wrong"}`}
+          aria-live="polite"
+        >
           {q.explanation}
         </div>
       )}
@@ -116,7 +119,7 @@ export function PreQuizGate({ lesson }: { lesson: Lesson }) {
       <div className="pre-quiz pre-quiz-done">
         <div className="pq-header">
           <span className="pq-label">Pre-quiz complete</span>
-          <button className="pq-skip" onClick={() => setRetaking(true)}>
+          <button className="pq-skip" onClick={() => { setRetaking(true); setSkipped(false); }}>
             Retake
           </button>
         </div>

@@ -32,7 +32,7 @@ export function TaskCard({ lessonId, task }: { lessonId: string; task: HandsOnTa
           <span className="task-complete-badge">Completed</span>
           <button
             className="task-undo"
-            onClick={() => recordTask(lessonId, task.id, "skipped")}
+            onClick={() => recordTask(lessonId, task.id, null)}
           >
             Undo
           </button>

@@ -75,7 +75,7 @@ function QuestionCard({
 
 function Feedback({ correct, explanation }: { correct: boolean; explanation: string }) {
   return (
-    <div className={`quiz-feedback ${correct ? "ok" : "bad"}`}>
+    <div className={`quiz-feedback ${correct ? "ok" : "bad"}`} aria-live="polite">
       <strong>{correct ? "Correct." : "Not quite."}</strong>{" "}
       <RichLine text={explanation} />
     </div>
@@ -150,6 +150,7 @@ function MultiSelect({
 
   return (
     <>
+      <p className="quiz-multi-hint">Select all that apply.</p>
       <ul className="quiz-options">
         {q.options.map((opt, i) => {
           const checked = sel.has(i);
@@ -271,6 +272,7 @@ function FillIn({
       <div className="fillin-row">
         <input
           className="fillin-input"
+          aria-label={q.placeholder ?? "Fill in your answer"}
           placeholder={q.placeholder ?? "your answer"}
           value={text}
           disabled={submitted}
