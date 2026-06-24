@@ -26,12 +26,13 @@ const SECTIONS = {
       type: "array",
       description: "8-16 substantive lesson sections in reading order",
       items: {
-        type: "object", additionalProperties: false, required: ["heading", "body"],
+        type: "object", additionalProperties: false, required: ["heading", "body", "targetConceptsCovered", "unverifiedClaims", "sources"],
         properties: {
           heading: { type: "string", description: "section heading" },
           body: { type: "string", description: "markdown-lite body: paragraphs, - bullets, | tables |, ``` code fences ```, and ## / ### sub-headings. Use real commands and file layouts in code fences." },
           targetConceptsCovered: { type: "array", items: { type: "string" }, description: "list of target concept TERMS (from the stage definition) that this section directly teaches. At least one section must cover every listed target concept." },
           unverifiedClaims: { type: "array", items: { type: "string" }, description: "REQUIRED: list any specific technical details in this section (version numbers, env var names, file paths, setting key names, exact CLI flags) that you could NOT trace verbatim to the provided verified claims or official docs. If you are confident everything is sourced, return an empty array." },
+          sources: { type: "array", items: { type: "string" }, description: "Official documentation URLs backing specific claims in this section. REQUIRED for sections with technical claims. Use the REFERENCE URLS list, plus any additional URLs you fetch. Empty only for pure introductory/transition sections." },
         },
       },
     },
@@ -52,7 +53,24 @@ const results = await pipeline(
   // 1. Author — comprehensive, deep, concrete
   (s) => agent(
     `You are writing ONE stage of a serious technical course for a lead setting up their team's shared Claude Code + OpenAI Codex infrastructure. The reader can read code and wants DEPTH, not hand-holding — prior drafts were criticized as "one page of text written for a five-year-old." Write a comprehensive treatment.\n\n${brief(s)}\n\n` +
-    `REQUIREMENTS:\n` +
+    `REFERENCE URLS (use these as your sources array; fetch the ones relevant to this section):
+- https://code.claude.com/docs/en/authentication — auth precedence, apiKeyHelper, setup-token, credentials
+- https://code.claude.com/docs/en/admin-setup — org setup, managed settings, SSO, domain capture, SCIM
+- https://code.claude.com/docs/en/permissions — permission rules, allow/deny/ask, Bash restrictions, sandboxing
+- https://code.claude.com/docs/en/settings — settings.json, scope precedence, env var overrides
+- https://code.claude.com/docs/en/server-managed-settings — server-managed delivery, forceRemoteSettingsRefresh
+- https://code.claude.com/docs/en/security — bypassPermissions, built-in protections, network restrictions
+- https://code.claude.com/docs/en/managed-mcp — org-managed MCP servers, allowedMcpServers
+- https://code.claude.com/docs/en/skills — skill YAML frontmatter, /skill-name invocation
+- https://code.claude.com/docs/en/sub-agents — built-in subagents, agent teams, token usage
+- https://code.claude.com/docs/en/iam — plan tiers, feature availability by plan
+- https://code.claude.com/docs/en/llm-gateway — ANTHROPIC_BASE_URL, gateway routing
+- https://code.claude.com/docs/en/memory — CLAUDE.md scopes, concatenation, managed CLAUDE.md
+- https://code.claude.com/docs/en/permission-modes — default/bypassPermissions/plan mode
+- https://code.claude.com/docs/en/costs — model costs, token tracking, agent team costs
+
+REQUIREMENTS:
+` +
     `- Substantial: 8-16 sections, ~2000-3500 words total. Real substance, not filler.\n` +
     `- CONCRETE mechanics: actual file layouts, config, and commands in \`\`\` code fences; real examples a reader can copy. Show the formats (SKILL.md frontmatter, settings.json, .mcp.json, marketplace.json, /plugin commands, permission rules, etc.) where relevant to this stage.\n` +
     `- At least one markdown comparison/decision TABLE (| col | col |) where it helps.\n` +
@@ -73,7 +91,8 @@ const results = await pipeline(
     `2. REMOVE HALLUCINATED SPECIFICS: Look at each section's unverifiedClaims list. For any claim flagged there, either (a) fetch the official doc and confirm the exact string, or (b) remove or generalize it. Do not publish specific version numbers, env var names, or file paths that cannot be traced to a source.\n` +
     `3. CONCEPT COVERAGE: Check that the draft covers ALL target concepts. For any concept not yet covered, add a new section.\n` +
     `4. DEEPEN any thin section — add the missing mechanics, an example, a pitfall, or a tradeoff. Ensure there is real substance and at least one concrete code fence and one table.\n` +
-    `5. Keep it accurate to the verified claims (do not contradict them).\n\n` +
+    `5. PROPAGATE AND FILL SOURCES: keep the sources array from each authored section. For any section with technical claims but an empty sources array, add the relevant URL(s) from: https://code.claude.com/docs/en/authentication, /admin-setup, /permissions, /settings, /server-managed-settings, /security, /managed-mcp, /skills, /sub-agents, /iam, /llm-gateway, /memory, /permission-modes, /costs. Never remove a source URL.\n` +
+    `6. Keep it accurate to the verified claims (do not contradict them).\n\n` +
     `STAGE: ${s.title} (${s.id})\n\nVERIFIED CLAIMS:\n` +
     s.claims.map((c) => `- ${c.statement}` + (c.sources ? ` [${c.sources.join(", ")}]` : "")).join("\n") +
     `\n\nDRAFT SECTIONS (JSON):\n${JSON.stringify(authored?.sections ?? [])}\n\n` +

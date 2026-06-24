@@ -667,6 +667,27 @@ h4.md-h { font-size: 16px; } h5.md-h { font-size: 14.5px; color: var(--ink); } h
 }
 .section-collapsed { opacity: 0.7; }
 
+/* ----------------------- Section Sources ------------------------- */
+.section-sources {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin-top: 14px; padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 12px;
+}
+.section-sources-label {
+  color: var(--ink-soft); font-weight: 500; flex-shrink: 0;
+}
+.section-source-link {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 8px; border-radius: 999px;
+  background: #f1f5f9; color: var(--accent);
+  text-decoration: none; font-family: var(--mono); font-size: 11px;
+  border: 1px solid #e2e8f0; transition: background 0.1s;
+  max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.section-source-link::before { content: "↗"; font-size: 10px; }
+.section-source-link:hover { background: #e0e7ff; border-color: var(--accent); }
+
 /* ----------------------- Task Cards ------------------------------ */
 .task-card {
   margin: 0 0 18px;

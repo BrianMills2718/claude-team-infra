@@ -134,6 +134,25 @@ export function LessonPage({ lesson }: { lesson: Lesson }) {
                 )}
               </div>
               {!isCollapsed && <RichText text={s.body} />}
+              {!isCollapsed && s.sources && s.sources.length > 0 && (
+                <div className="section-sources">
+                  <span className="section-sources-label">Sources:</span>
+                  {s.sources.map((url, si) => {
+                    let label: string;
+                    try {
+                      const u = new URL(url);
+                      label = u.hostname.replace(/^www\./, "") + (u.pathname !== "/" ? u.pathname : "");
+                    } catch {
+                      label = url;
+                    }
+                    return (
+                      <a key={si} href={url} target="_blank" rel="noopener noreferrer" className="section-source-link">
+                        {label}
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
             </section>
             {tasksAfter.map((task) => (
               <TaskCard key={task.id} lessonId={lesson.id} task={task} />

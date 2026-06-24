@@ -3,6 +3,7 @@
 TARGET ?= /tmp/gen-instance
 SPEC ?= /tmp/course-spec.json
 LESSONS ?= /tmp/authored-lessons-grounded.json
+LESSONS_RAW ?= /tmp/authored-lessons-workflow.json
 QUIZZES_RAW ?= /tmp/authored-quizzes-12.json
 QUIZZES ?= /tmp/authored-quizzes-12-normalized.json
 
@@ -13,6 +14,9 @@ help: ## Show this help
 
 normalize: ## Normalize raw workflow quiz output → frontend-ready format
 	node scripts/normalize-quizzes.mjs $(QUIZZES_RAW) $(QUIZZES)
+
+extract-lessons: ## Extract lesson workflow output → build-course format (preserves sources)
+	node scripts/extract-lessons.mjs $(LESSONS_RAW) $(LESSONS)
 
 validate-quizzes: ## Validate normalized quizzes: bounds, types, sectionIndices
 	node scripts/validate-quizzes.mjs $(QUIZZES) $(TARGET)/src/content/lessons/index.ts
