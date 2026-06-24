@@ -3322,7 +3322,7 @@ export const LESSONS: Lesson[] = [
     ],
     "correct": 1,
     "sectionIndices": [
-     9
+     7
     ],
     "explanation": "claude.ai connectors silently do not load when `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `apiKeyHelper`, Bedrock, or Vertex is active as the auth source — even after `/login`. They only appear when the active auth is the Claude.ai subscription. Run `/status` to check."
    },
