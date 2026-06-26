@@ -1,11 +1,19 @@
-version: 1
-project: claude-team-infra
-publish:
-  - path: README.md
-    type: ProjectOverview
-    title: Readme
-    tags: [portfolio, claude-team-infra]
-  - path: CLAUDE.md
-    type: ProjectOverview
-    title: Claude
-    tags: [portfolio, claude-team-infra]
+---
+doc-role: wiki-manifest
+freshness: 2026-06-25
+---
+
+# Wiki Manifest — Claude Team Infra
+
+id: claude-team-infra
+portfolio_tier: supporting
+description: >
+  Claude Team Infra
+
+sources:
+  - path: ../README.md
+    role: overview
+  - path: ../CLAUDE.md
+    role: instructions
+  - path: ../HANDOFF.md
+    role: status
