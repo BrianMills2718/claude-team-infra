@@ -1,0 +1,11 @@
+version: 1
+project: claude-team-infra
+publish:
+  - path: README.md
+    type: ProjectOverview
+    title: Readme
+    tags: [portfolio, claude-team-infra]
+  - path: CLAUDE.md
+    type: ProjectOverview
+    title: Claude
+    tags: [portfolio, claude-team-infra]
